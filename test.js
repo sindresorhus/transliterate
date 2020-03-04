@@ -42,6 +42,10 @@ test('supports Pashto', t => {
 	t.is(transliterate('ګ ړ څ'), 'g r c');
 });
 
+test('supports Sindhi', t => {
+	t.is(transliterate('آ ٻ ق'), 'A B q');
+});
+
 test('supports Russian', t => {
 	t.is(transliterate('Ж п ю'), 'Zh p yu');
 });
