@@ -73,6 +73,7 @@ This includes special handling for:
 - Arabic
 - Armenian
 - Czech
+- Danish
 - Dhivehi
 - Georgian
 - German (umlauts)
