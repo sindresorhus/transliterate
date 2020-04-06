@@ -70,6 +70,10 @@ test('supports Czech', t => {
 	t.is(transliterate('č ž Ň'), 'c z N');
 });
 
+test.failing('supports Danish', t => {
+	t.is(transliterate('æ ø å Æ Ø Å'), 'ae oe aa Ae Oe Aa');
+});
+
 test('supports Dhivehi', t => {
 	t.is(transliterate('ޝ ޓ ބ'), 'sh t b');
 });
