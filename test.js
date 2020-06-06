@@ -1,5 +1,6 @@
 import test from 'ava';
 import transliterate from '.';
+import replacements from './replacements';
 
 test('main', t => {
 	t.is(transliterate('Foo ÿ'), 'Foo y');
@@ -16,6 +17,18 @@ test('customReplacements option', t => {
 			['ß', 'ss']
 		]
 	}), 'Zuerich');
+});
+
+test('all replacements are ASCII', t => {
+	const MAX_ASCII_CHARACTER_CODE = 127;
+
+	for (const [original, replacement] of replacements) {
+		if (replacement === '') {
+			continue;
+		}
+
+		t.true(replacement.charCodeAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.charCodeAt(0)})`);
+	}
 });
 
 test('supports German umlauts', t => {
@@ -51,7 +64,7 @@ test('supports Romanian', t => {
 });
 
 test('supports Turkish', t => {
-	t.is(transliterate('İ ı Ş ş Ç ç Ğ ğ'), 'i i s s c c g g');
+	t.is(transliterate('İ ı Ş ş Ç ç Ğ ğ'), 'I i S s C c G g');
 });
 
 test('supports Armenian', t => {
