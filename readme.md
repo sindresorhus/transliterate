@@ -1,4 +1,4 @@
-# transliterate [![Build Status](https://travis-ci.org/sindresorhus/transliterate.svg?branch=master)](https://travis-ci.org/sindresorhus/transliterate)
+# transliterate
 
 > Convert Unicode characters to Latin characters using [transliteration](https://en.wikipedia.org/wiki/Transliteration)
 
