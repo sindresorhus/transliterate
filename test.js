@@ -68,7 +68,7 @@ test('supports Turkish', t => {
 });
 
 test('supports Armenian', t => {
-	t.is(transliterate('ր ե ւ ա ն'), 're ye v a n');
+	t.is(transliterate('Ե ր և ա ն'), 'Ye r yev a n');
 });
 
 test('supports Georgian', t => {
