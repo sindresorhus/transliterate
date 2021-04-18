@@ -13,7 +13,7 @@ $ npm install @sindresorhus/transliterate
 ## Usage
 
 ```js
-const transliterate = require('@sindresorhus/transliterate');
+import transliterate from '@sindresorhus/transliterate';
 
 transliterate('Fußgängerübergänge');
 //=> 'Fussgaengeruebergaenge'
@@ -54,7 +54,7 @@ The replacements are run on the original string before any other transformations
 This only overrides a default replacement if you set an item with the same key.
 
 ```js
-const transliterate = require('@sindresorhus/transliterate');
+import transliterate from '@sindresorhus/transliterate';
 
 transliterate('Я люблю единорогов', {
 	customReplacements: [

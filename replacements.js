@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = [
+const replacements = [
 	// German umlauts
 	['ß', 'ss'],
 	['ä', 'ae'],
@@ -795,3 +793,5 @@ module.exports = [
 	// ['ø', 'oe'],
 	// ['å', 'aa']
 ];
+
+export default replacements;

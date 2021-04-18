@@ -1,28 +1,26 @@
-declare namespace transliterate {
-	interface Options {
-		/**
-		Add your own custom replacements.
+export interface Options {
+	/**
+	Add your own custom replacements.
 
-		The replacements are run on the original string before any other transformations.
+	The replacements are run on the original string before any other transformations.
 
-		This only overrides a default replacement if you set an item with the same key.
+	This only overrides a default replacement if you set an item with the same key.
 
-		@default []
+	@default []
 
-		@example
-		```
-		import transliterate = require('@sindresorhus/transliterate');
+	@example
+	```
+	import transliterate from '@sindresorhus/transliterate';
 
-		transliterate('Я люблю единорогов', {
-			customReplacements: [
-				['единорогов', '🦄']
-			]
-		})
-		//=> 'Ya lyublyu 🦄'
-		```
-		*/
-		readonly customReplacements?: ReadonlyArray<[string, string]>;
-	}
+	transliterate('Я люблю единорогов', {
+		customReplacements: [
+			['единорогов', '🦄']
+		]
+	})
+	//=> 'Ya lyublyu 🦄'
+	```
+	*/
+	readonly customReplacements?: ReadonlyArray<[string, string]>;
 }
 
 /**
@@ -32,7 +30,7 @@ Convert Unicode characters to Latin characters using [transliteration](https://e
 
 @example
 ```
-import transliterate = require('@sindresorhus/transliterate');
+import transliterate from '@sindresorhus/transliterate';
 
 transliterate('Fußgängerübergänge');
 //=> 'Fussgaengeruebergaenge'
@@ -47,9 +45,4 @@ transliterate('tôi yêu những chú kỳ lân');
 //=> 'toi yeu nhung chu ky lan'
 ```
 */
-declare function transliterate(
-	string: string,
-	options?: transliterate.Options
-): string;
-
-export = transliterate;
+export default function transliterate(string: string, options?: Options): string;

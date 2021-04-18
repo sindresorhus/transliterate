@@ -1,6 +1,6 @@
 import test from 'ava';
-import transliterate from '.';
-import replacements from './replacements';
+import transliterate from './index.js';
+import replacements from './replacements.js';
 
 test('main', t => {
 	t.is(transliterate('Foo ÿ'), 'Foo y');
@@ -130,4 +130,3 @@ test.failing('supports Swedish', t => {
 test('supports Ukrainian', t => {
 	t.is(transliterate('Є Ґ ї'), 'Ye G yi');
 });
-
