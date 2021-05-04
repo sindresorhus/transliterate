@@ -792,7 +792,7 @@ const replacements = [
 	['і', 'i'],
 	['ї', 'yi'],
 	['ґ', 'g'],
-	
+
 	// Dutch
 	['Ĳ', 'IJ'],
 	['ĳ', 'ij']
