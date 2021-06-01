@@ -2,13 +2,14 @@ import deburr from 'lodash.deburr';
 import escapeStringRegexp from 'escape-string-regexp';
 import builtinReplacements from './replacements.js';
 
-const doCustomReplacements = (string, replacements, preserveChars) => {
+const doCustomReplacements = (string, replacements, preservedCharacters) => {
 	for (const [key, value] of replacements) {
-		regex = new RegExp(escapeStringRegexp(key), 'g');
-		if (preserveChars && regex.test(preserveChars)) continue;
+		if (preservedCharacters && preservedCharacters.length > 0 && preservedCharacters.includes(key)) {
+			continue;
+		}
 
 		// TODO: Use `String#replaceAll()` when targeting Node.js 16.
-		string = string.replace(regex, value);
+		string = string.replace(new RegExp(escapeStringRegexp(key), 'g'), value);
 	}
 
 	return string;
@@ -21,16 +22,16 @@ export default function transliterate(string, options) {
 
 	options = {
 		customReplacements: [],
-		preserveChars: '',
+		preservedCharacters: [],
 		...options
 	};
 
-	const builtinReplacements = new Map(builtinReplacements);
-	const customReplacements = new Map([...options.customReplacements]);
+	const builtinReplacementsMap = new Map([...builtinReplacements]);
+	const customReplacementsMap = new Map([...options.customReplacements]);
 
 	string = string.normalize();
-	string = doCustomReplacements(string, builtinReplacements, options.preserveChars);
-	string = doCustomReplacements(string, customReplacements);
+	string = doCustomReplacements(string, builtinReplacementsMap, options.preservedCharacters);
+	string = doCustomReplacements(string, customReplacementsMap);
 	string = deburr(string);
 
 	return string;
