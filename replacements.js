@@ -1,7 +1,6 @@
 const replacements = [
 	// German umlauts
 	['ß', 'ss'],
-	['ẞ', 'Ss'],
 	['ä', 'ae'],
 	['Ä', 'Ae'],
 	['ö', 'oe'],
