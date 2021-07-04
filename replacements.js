@@ -796,7 +796,7 @@ const replacements = [
 
 	// Dutch
 	['Ĳ', 'IJ'],
-	['ĳ', 'ij']
+	['ĳ', 'ij'],
 
 	// Danish
 	// ['Æ', 'Ae'],
