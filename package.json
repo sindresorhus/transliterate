@@ -5,23 +5,30 @@
 	"license": "MIT",
 	"repository": "sindresorhus/transliterate",
 	"funding": "https://github.com/sponsors/sindresorhus",
+	"source": "./index.js",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
 		"url": "https://sindresorhus.com"
 	},
 	"type": "module",
-	"exports": "./index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		"require": "./dist/index.cjs",
+		"default": "./dist/index.modern.js"
+	},
 	"engines": {
 		"node": ">=12"
 	},
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.module.js",
+	"unpkg": "./dist/index.umd.js",
 	"scripts": {
-		"test": "xo && ava && tsd"
+		"test": "xo && ava && npm run build && tsd",
+		"build": "microbundle && copyfiles *d.ts dist"
 	},
 	"files": [
-		"index.js",
-		"index.d.ts",
-		"replacements.js"
+		"dist"
 	],
 	"keywords": [
 		"transliterate",
@@ -42,7 +49,9 @@
 	},
 	"devDependencies": {
 		"ava": "^3.15.0",
-		"tsd": "^0.14.0",
+		"copyfiles": "^2.4.1",
+		"microbundle": "^0.14.2",
+		"tsd": "^0.19.0",
 		"xo": "^0.38.2"
 	}
 }
