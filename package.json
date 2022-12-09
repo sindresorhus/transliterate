@@ -37,8 +37,7 @@
 		"replace"
 	],
 	"dependencies": {
-		"escape-string-regexp": "^5.0.0",
-		"lodash.deburr": "^4.1.0"
+		"escape-string-regexp": "^5.0.0"
 	},
 	"devDependencies": {
 		"ava": "^3.15.0",

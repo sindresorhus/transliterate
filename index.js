@@ -1,4 +1,3 @@
-import deburr from 'lodash.deburr';
 import escapeStringRegexp from 'escape-string-regexp';
 import builtinReplacements from './replacements.js';
 
@@ -28,7 +27,7 @@ export default function transliterate(string, options) {
 
 	string = string.normalize();
 	string = doCustomReplacements(string, customReplacements);
-	string = deburr(string);
+	string = string.normalize('NFD').replace(/\p{Diacritic}/gu, '').normalize();
 
 	return string;
 }
