@@ -1,4 +1,4 @@
-import deburr from 'lodash.deburr';
+import {deburr} from 'lodash-es';
 import escapeStringRegexp from 'escape-string-regexp';
 import builtinReplacements from './replacements.js';
 
