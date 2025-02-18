@@ -1,13 +1,18 @@
-import escapeStringRegexp from 'escape-string-regexp';
 import builtinReplacements from './replacements.js';
 
 const doCustomReplacements = (string, replacements) => {
-	for (const [key, value] of replacements) {
-		// TODO: Use `String#replaceAll()` when targeting Node.js 16.
-		string = string.replace(new RegExp(escapeStringRegexp(key), 'g'), value);
+	const stringSplit = string.split('');
+
+	for (let i = 0; i < stringSplit.length; i++) {
+		const char = stringSplit[i];
+		const replacement = replacements.get(char);
+
+		if (replacement) {
+			stringSplit[i] = replacement;
+		}
 	}
 
-	return string;
+	return stringSplit.join('');
 };
 
 export default function transliterate(string, options) {
