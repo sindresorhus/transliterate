@@ -6,8 +6,8 @@ Can be useful for [slugification](https://github.com/sindresorhus/slugify) purpo
 
 ## Install
 
-```
-$ npm install @sindresorhus/transliterate
+```sh
+npm install @sindresorhus/transliterate
 ```
 
 ## Usage
@@ -26,6 +26,9 @@ transliterate('أنا أحب حيدات');
 
 transliterate('tôi yêu những chú kỳ lân');
 //=> 'toi yeu nhung chu ky lan'
+
+transliterate('En–dashes and em—dashes are normalized');
+//=> 'En-dashes and em-dashes are normalized'
 ```
 
 ## API

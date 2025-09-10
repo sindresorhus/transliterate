@@ -29,5 +29,8 @@ export default function transliterate(string, options) {
 	string = doCustomReplacements(string, customReplacements);
 	string = string.normalize('NFD').replace(/\p{Diacritic}/gu, '').normalize();
 
+	// Normalize all dash types to hyphen-minus
+	string = string.replace(/\p{Dash_Punctuation}/gu, '-');
+
 	return string;
 }

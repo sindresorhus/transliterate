@@ -130,3 +130,17 @@ test.failing('supports Swedish', t => {
 test('supports Ukrainian', t => {
 	t.is(transliterate('Є Ґ ї'), 'Ye G yi');
 });
+
+test('normalizes various dash types to hyphen', t => {
+	// Testing various Unicode dash characters
+	t.is(transliterate('en–dash'), 'en-dash'); // En dash (U+2013)
+	t.is(transliterate('em—dash'), 'em-dash'); // Em dash (U+2014)
+	t.is(transliterate('minus−sign'), 'minus-sign'); // Minus sign (U+2212)
+	t.is(transliterate('figure‒dash'), 'figure-dash'); // Figure dash (U+2012)
+	t.is(transliterate('horizontal―bar'), 'horizontal-bar'); // Horizontal bar (U+2015)
+	t.is(transliterate('swung⁓dash'), 'swung-dash'); // Swung dash (U+2053)
+	t.is(transliterate('two⸺em⸻dash'), 'two-em-dash'); // Two-em dash (U+2E3A) and Three-em dash (U+2E3B)
+
+	// Combined test
+	t.is(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
+});

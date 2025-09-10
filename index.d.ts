@@ -43,6 +43,9 @@ transliterate('أنا أحب حيدات');
 
 transliterate('tôi yêu những chú kỳ lân');
 //=> 'toi yeu nhung chu ky lan'
+
+transliterate('En–dashes and em—dashes are normalized');
+//=> 'En-dashes and em-dashes are normalized'
 ```
 */
 export default function transliterate(string: string, options?: Options): string;

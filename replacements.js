@@ -2050,7 +2050,11 @@ const replacements = [
 	['🆆', 'W'],
 	['🆇', 'X'],
 	['🆈', 'Y'],
-	['🆉', 'Z']
+	['🆉', 'Z'],
+
+	// Dashes not covered by Dash_Punctuation category
+	['−', '-'], // U+2212 Minus Sign (Mathematical Operators category)
+	['⁓', '-'] // U+2053 Swung Dash (Other_Punctuation category)
 ];
 
 export default replacements;
