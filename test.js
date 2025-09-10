@@ -83,8 +83,8 @@ test('supports Czech', t => {
 	t.is(transliterate('č ž Ň'), 'c z N');
 });
 
-test.failing('supports Danish', t => {
-	t.is(transliterate('æ ø å Æ Ø Å'), 'ae oe aa Ae Oe Aa');
+test('supports Danish', t => {
+	t.is(transliterate('æ ø å Æ Ø Å', {locale: 'da'}), 'ae oe aa Ae Oe Aa');
 });
 
 test('supports Dhivehi', t => {
@@ -95,8 +95,8 @@ test('supports Greek', t => {
 	t.is(transliterate('θ Γ Ξ'), 'th G KS');
 });
 
-test.failing('supports Hungarian', t => {
-	t.is(transliterate('ű ö Ö'), 'u o O');
+test('supports Hungarian', t => {
+	t.is(transliterate('ű ö Ö', {locale: 'hu'}), 'u o O');
 });
 
 test('supports Latvian', t => {
@@ -115,16 +115,16 @@ test('supports Polish', t => {
 	t.is(transliterate('ą Ą Ł'), 'a A L');
 });
 
-test.failing('supports Serbian', t => {
-	t.is(transliterate('ђ џ Ђ Љ'), 'dj dz Dj Lj');
+test('supports Serbian', t => {
+	t.is(transliterate('ђ џ Ђ Љ', {locale: 'sr'}), 'dj dz Dj Lj');
 });
 
 test('supports Slovak', t => {
 	t.is(transliterate('ľ Ľ Ŕ'), 'l L R');
 });
 
-test.failing('supports Swedish', t => {
-	t.is(transliterate('ä ö Ä Ö'), 'a o A O');
+test('supports Swedish', t => {
+	t.is(transliterate('ä ö Ä Ö', {locale: 'sv'}), 'a o A O');
 });
 
 test('supports Ukrainian', t => {
@@ -143,4 +143,123 @@ test('normalizes various dash types to hyphen', t => {
 
 	// Combined test
 	t.is(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
+});
+
+test('locale option for language-specific transliteration', t => {
+	// Swedish
+	t.is(transliterate('Sju sjösjuka sjömän', {locale: 'sv'}), 'Sju sjosjuka sjoman');
+	t.is(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgos');
+	t.is(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgos'); // Full locale tag
+
+	// German (default behavior)
+	t.is(transliterate('Räksmörgås', {locale: 'de'}), 'Raeksmoergas');
+	t.is(transliterate('Räksmörgås'), 'Raeksmoergas'); // Without locale, uses default
+
+	// Danish
+	t.is(transliterate('Rød grød med fløde', {locale: 'da'}), 'Roed groed med floede');
+	t.is(transliterate('Blåbærsyltetøj', {locale: 'da'}), 'Blaabaersyltetoej');
+
+	// Norwegian
+	t.is(transliterate('Rød grød med fløde', {locale: 'no'}), 'Roed groed med floede');
+	t.is(transliterate('Rød grød med fløde', {locale: 'nb'}), 'Roed groed med floede');
+
+	// Unknown locale falls back to default
+	t.is(transliterate('Räksmörgås', {locale: 'unknown'}), 'Raeksmoergas');
+
+	// Custom replacements still work and take precedence
+	t.is(transliterate('Räksmörgås', {
+		locale: 'sv',
+		customReplacements: [['ä', 'ae']]
+	}), 'Raeksmorgos');
+});
+
+test('Turkish locale support - Issue #34', t => {
+	// Turkish uses simplified transliterations compared to German
+	t.is(transliterate('Ağır şöförlük', {locale: 'tr'}), 'Agir soforluk');
+	t.is(transliterate('âöü', {locale: 'tr'}), 'aou');
+	t.is(transliterate('ÂÖÜ', {locale: 'tr'}), 'AOU');
+
+	// Compare with German defaults
+	t.is(transliterate('öü', {locale: 'de'}), 'oeue');
+	t.is(transliterate('öü'), 'oeue'); // Default behavior
+});
+
+test('Latin Ō ō characters - Issue #35', t => {
+	t.is(transliterate('Ōdor'), 'Odor');
+	t.is(transliterate('tōkyo'), 'tokyo');
+	t.is(transliterate('Tōkyō'), 'Tokyo');
+});
+
+test('Fixed (c) and (d) replacements - Issue #36', t => {
+	t.is(transliterate('ⓒ'), '(c)');
+	t.is(transliterate('ⓓ'), '(d)');
+});
+
+test('Armenian ու transliteration fix - Issue #31', t => {
+	// This was broken because ո was processed before ու
+	t.is(transliterate('ու'), 'u');
+	t.is(transliterate('ՈՒ'), 'U');
+	t.is(transliterate('Ու'), 'U');
+
+	// Full test case from the issue
+	t.is(transliterate('ու ՈՒ Ու'), 'u U U');
+});
+
+test('Hungarian locale support', t => {
+	t.is(transliterate('Magyar őslakók', {locale: 'hu'}), 'Magyar oslakok');
+	t.is(transliterate('űű öö', {locale: 'hu'}), 'uu oo');
+});
+
+test('Serbian locale support', t => {
+	t.is(transliterate('Ђоко џудиста', {locale: 'sr'}), 'Djoko dzudista');
+	t.is(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njikhova');
+});
+
+test('Azerbaijani ə and Ə support - Issue #33', t => {
+	t.is(transliterate('ədəbiyyat'), 'adabiyyat');
+	t.is(transliterate('Ədəbiyyat'), 'Adabiyyat');
+	t.is(transliterate('məşhur'), 'mashur');
+});
+
+test('Fixed replacement mistakes - Issue #32', t => {
+	t.is(transliterate('𝓀'), 'k'); // Was 'h'
+	t.is(transliterate('𝕆'), 'O'); // Was 'N'
+});
+
+test('French œ ligature support - Issue #7', t => {
+	t.is(transliterate('œuf'), 'oeuf');
+	t.is(transliterate('Œuvre'), 'OEuvre');
+	t.is(transliterate('cœur'), 'coeur');
+});
+
+test('detects overlapping replacements not handled by locales', t => {
+	// This test helps identify character conflicts that might need locale-specific handling
+	const conflicts = [];
+	const charMap = new Map();
+
+	// Check global replacements for duplicates
+	for (const [char, replacement] of replacements) {
+		if (charMap.has(char)) {
+			const existing = charMap.get(char);
+			if (existing !== replacement) {
+				conflicts.push({
+					char,
+					replacements: [existing, replacement]
+				});
+			}
+		} else {
+			charMap.set(char, replacement);
+		}
+	}
+
+	// Log conflicts for awareness
+	if (conflicts.length > 0) {
+		console.log(`Found ${conflicts.length} character conflicts in replacements:`);
+		for (const c of conflicts) {
+			console.log(`  '${c.char}': [${c.replacements.join(', ')}]`);
+		}
+	}
+
+	// The test passes if there are no conflicts
+	t.is(conflicts.length, 0, `Found ${conflicts.length} character conflicts in replacements`);
 });

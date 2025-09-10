@@ -1,5 +1,6 @@
 import escapeStringRegexp from 'escape-string-regexp';
 import builtinReplacements from './replacements.js';
+import localeReplacements from './locale-replacements.js';
 
 const doCustomReplacements = (string, replacements) => {
 	for (const [key, value] of replacements) {
@@ -8,6 +9,20 @@ const doCustomReplacements = (string, replacements) => {
 	}
 
 	return string;
+};
+
+const getLocaleReplacements = locale => {
+	if (!locale) {
+		return [];
+	}
+
+	const normalizedLocale = locale.toLowerCase()
+		// Norwegian (no) is an alias for Norwegian Bokmål (nb)
+		.replace(/^no(-|$)/, 'nb$1');
+
+	return localeReplacements[normalizedLocale] ||
+		localeReplacements[normalizedLocale.split('-')[0]] ||
+		[];
 };
 
 export default function transliterate(string, options) {
@@ -20,8 +35,13 @@ export default function transliterate(string, options) {
 		...options
 	};
 
+	// Get locale-specific replacements
+	const localeSpecificReplacements = getLocaleReplacements(options.locale);
+
+	// Merge replacements: locale-specific > custom > builtin
 	const customReplacements = new Map([
 		...builtinReplacements,
+		...localeSpecificReplacements,
 		...options.customReplacements
 	]);
 

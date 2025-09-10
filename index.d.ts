@@ -21,6 +21,26 @@ export interface Options {
 	```
 	*/
 	readonly customReplacements?: ReadonlyArray<[string, string]>;
+
+	/**
+	[BCP-47](https://developer.mozilla.org/en-US/docs/Glossary/BCP_47_language_tag) language tag for language-specific transliteration.
+
+	When specified, uses language-specific replacement rules for characters that have different transliterations in different languages.
+
+	@example
+	```
+	import transliterate from '@sindresorhus/transliterate';
+
+	// Swedish: ä→a, ö→o, å→o
+	transliterate('Räksmörgås', {locale: 'sv'});
+	//=> 'Raksmorgos'
+
+	// German: ä→ae, ö→oe
+	transliterate('Räksmörgås', {locale: 'de'});
+	//=> 'Raeksmoergas'
+	```
+	*/
+	readonly locale?: string;
 }
 
 /**

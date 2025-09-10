@@ -23,7 +23,8 @@
 	"files": [
 		"index.js",
 		"index.d.ts",
-		"replacements.js"
+		"replacements.js",
+		"locale-replacements.js"
 	],
 	"keywords": [
 		"transliterate",
