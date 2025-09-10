@@ -78,9 +78,9 @@ When specified, uses language-specific replacement rules for characters that hav
 ```js
 import transliterate from '@sindresorhus/transliterate';
 
-// Swedish: ä→a, ö→o, å→o
+// Swedish: ä→a, ö→o, å→a
 transliterate('Räksmörgås', {locale: 'sv'});
-//=> 'Raksmorgos'
+//=> 'Raksmorgas'
 
 // German: ä→ae, ö→oe
 transliterate('Räksmörgås', {locale: 'de'});

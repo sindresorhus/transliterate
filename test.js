@@ -41,6 +41,7 @@ test('supports Vietnamese', t => {
 
 test('supports Arabic', t => {
 	t.is(transliterate('ث س و'), 'th s w');
+	t.is(transliterate('إ'), 'a'); // Issue #9 - alif with hamza below should be 'a' not 'i'
 });
 
 test('supports Persian / Farsi', t => {
@@ -148,8 +149,8 @@ test('normalizes various dash types to hyphen', t => {
 test('locale option for language-specific transliteration', t => {
 	// Swedish
 	t.is(transliterate('Sju sjösjuka sjömän', {locale: 'sv'}), 'Sju sjosjuka sjoman');
-	t.is(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgos');
-	t.is(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgos'); // Full locale tag
+	t.is(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgas');
+	t.is(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgas'); // Full locale tag
 
 	// German (default behavior)
 	t.is(transliterate('Räksmörgås', {locale: 'de'}), 'Raeksmoergas');
@@ -170,7 +171,7 @@ test('locale option for language-specific transliteration', t => {
 	t.is(transliterate('Räksmörgås', {
 		locale: 'sv',
 		customReplacements: [['ä', 'ae']],
-	}), 'Raeksmorgos');
+	}), 'Raeksmorgas');
 });
 
 test('Turkish locale support - Issue #34', t => {
