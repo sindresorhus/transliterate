@@ -15,7 +15,7 @@ const danishNorwegianReplacements = [
 	['ø', 'oe'],
 	['Ø', 'Oe'],
 	['å', 'aa'],
-	['Å', 'Aa']
+	['Å', 'Aa'],
 ];
 
 const localeReplacements = {
@@ -26,7 +26,7 @@ const localeReplacements = {
 		['ö', 'o'],
 		['Ö', 'O'],
 		['å', 'o'],
-		['Å', 'O']
+		['Å', 'O'],
 	],
 
 	// Danish
@@ -44,7 +44,7 @@ const localeReplacements = {
 		['ü', 'ue'],
 		['Ü', 'Ue'],
 		['ß', 'ss'],
-		['ẞ', 'Ss']
+		['ẞ', 'Ss'],
 	],
 
 	// Turkish
@@ -54,7 +54,7 @@ const localeReplacements = {
 		['ö', 'o'],
 		['Ö', 'O'],
 		['ü', 'u'],
-		['Ü', 'U']
+		['Ü', 'U'],
 	],
 
 	// Hungarian
@@ -74,7 +74,7 @@ const localeReplacements = {
 		['ó', 'o'],
 		['Ó', 'O'],
 		['ú', 'u'],
-		['Ú', 'U']
+		['Ú', 'U'],
 	],
 
 	// Serbian
@@ -94,8 +94,8 @@ const localeReplacements = {
 		['ш', 'sh'],
 		['Ш', 'Sh'],
 		['ж', 'zh'],
-		['Ж', 'Zh']
-	]
+		['Ж', 'Zh'],
+	],
 };
 
 export default localeReplacements;

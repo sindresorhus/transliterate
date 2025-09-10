@@ -1,6 +1,6 @@
 import test from 'ava';
-import transliterate from './index.js';
 import replacements from './replacements.js';
+import transliterate from './index.js';
 
 test('main', t => {
 	t.is(transliterate('Foo ÿ'), 'Foo y');
@@ -14,8 +14,8 @@ test('customReplacements option', t => {
 			['ä', 'ae'],
 			['ö', 'oe'],
 			['ü', 'ue'],
-			['ß', 'ss']
-		]
+			['ß', 'ss'],
+		],
 	}), 'Zuerich');
 });
 
@@ -27,7 +27,7 @@ test('all replacements are ASCII', t => {
 			continue;
 		}
 
-		t.true(replacement.charCodeAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.charCodeAt(0)})`);
+		t.true(replacement.codePointAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.codePointAt(0)})`);
 	}
 });
 
@@ -169,7 +169,7 @@ test('locale option for language-specific transliteration', t => {
 	// Custom replacements still work and take precedence
 	t.is(transliterate('Räksmörgås', {
 		locale: 'sv',
-		customReplacements: [['ä', 'ae']]
+		customReplacements: [['ä', 'ae']],
 	}), 'Raeksmorgos');
 });
 
@@ -244,7 +244,7 @@ test('detects overlapping replacements not handled by locales', t => {
 			if (existing !== replacement) {
 				conflicts.push({
 					char,
-					replacements: [existing, replacement]
+					replacements: [existing, replacement],
 				});
 			}
 		} else {

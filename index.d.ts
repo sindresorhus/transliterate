@@ -1,4 +1,4 @@
-export interface Options {
+export type Options = {
 	/**
 	Add your own custom replacements.
 
@@ -41,7 +41,7 @@ export interface Options {
 	```
 	*/
 	readonly locale?: string;
-}
+};
 
 /**
 Convert Unicode characters to Latin characters using [transliteration](https://en.wikipedia.org/wiki/Transliteration).
