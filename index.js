@@ -11,7 +11,7 @@ const doCustomReplacements = (string, replacements) => {
 
 const getLocaleReplacements = locale => {
 	if (!locale) {
-		return [];
+		return undefined;
 	}
 
 	const normalizedLocale = locale.toLowerCase()
@@ -20,7 +20,7 @@ const getLocaleReplacements = locale => {
 
 	return localeReplacements[normalizedLocale]
 		|| localeReplacements[normalizedLocale.split('-')[0]]
-		|| [];
+		|| undefined;
 };
 
 export default function transliterate(string, options) {
@@ -33,18 +33,26 @@ export default function transliterate(string, options) {
 		...options,
 	};
 
-	// Get locale-specific replacements
-	const localeSpecificReplacements = getLocaleReplacements(options.locale);
+	const localeMap = getLocaleReplacements(options.locale);
 
-	// Merge replacements: locale-specific > custom > builtin
-	const customReplacements = new Map([
-		...builtinReplacements,
-		...localeSpecificReplacements,
-		...options.customReplacements,
-	]);
+	let replacements = builtinReplacements;
+
+	if (localeMap || options.customReplacements.length > 0) {
+		replacements = new Map(builtinReplacements);
+
+		if (localeMap) {
+			for (const [key, value] of localeMap) {
+				replacements.set(key, value);
+			}
+		}
+
+		for (const [key, value] of options.customReplacements) {
+			replacements.set(key, value);
+		}
+	}
 
 	string = string.normalize();
-	string = doCustomReplacements(string, customReplacements);
+	string = doCustomReplacements(string, replacements);
 	string = string.normalize('NFD').replaceAll(/\p{Diacritic}/gu, '').normalize();
 
 	// Normalize all dash types to hyphen-minus

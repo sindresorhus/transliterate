@@ -2063,4 +2063,6 @@ const replacements = [
 	['⁓', '-'], // U+2053 Swung Dash (Other_Punctuation category)
 ];
 
-export default replacements;
+const builtinReplacements = new Map(replacements);
+
+export default builtinReplacements;

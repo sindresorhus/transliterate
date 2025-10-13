@@ -98,4 +98,9 @@ const localeReplacements = {
 	],
 };
 
+// Convert all locale replacements to Maps at module load time
+for (const locale of Object.keys(localeReplacements)) {
+	localeReplacements[locale] = new Map(localeReplacements[locale]);
+}
+
 export default localeReplacements;
