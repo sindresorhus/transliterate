@@ -47,7 +47,7 @@ Type: `object`
 
 ##### customReplacements
 
-Type: `Array<string[]>`\
+Type: `Array<string[]> | Map<string, string>`\
 Default: `[]`
 
 Add your own custom replacements.
@@ -65,6 +65,17 @@ transliterate('Я люблю единорогов', {
 	]
 })
 //=> 'Ya lyublyu 🦄'
+```
+
+You can also pass a `Map`:
+
+```js
+transliterate('foo & bar', {
+	customReplacements: new Map([
+		['&', 'and']
+	])
+})
+//=> 'foo and bar'
 ```
 
 ##### locale

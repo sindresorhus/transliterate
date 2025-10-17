@@ -37,7 +37,9 @@ export default function transliterate(string, options) {
 
 	let replacements = builtinReplacements;
 
-	if (localeMap || options.customReplacements.length > 0) {
+	const hasCustomReplacements = options.customReplacements.length > 0 || options.customReplacements.size > 0;
+
+	if (localeMap || hasCustomReplacements) {
 		replacements = new Map(builtinReplacements);
 
 		if (localeMap) {

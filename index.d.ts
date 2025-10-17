@@ -19,8 +19,20 @@ export type Options = {
 	})
 	//=> 'Ya lyublyu 🦄'
 	```
+
+	@example
+	```
+	import transliterate from '@sindresorhus/transliterate';
+
+	transliterate('foo & bar', {
+		customReplacements: new Map([
+			['&', 'and']
+		])
+	})
+	//=> 'foo and bar'
+	```
 	*/
-	readonly customReplacements?: ReadonlyArray<[string, string]>;
+	readonly customReplacements?: ReadonlyArray<[string, string]> | Map<string, string>;
 
 	/**
 	[BCP-47](https://developer.mozilla.org/en-US/docs/Glossary/BCP_47_language_tag) language tag for language-specific transliteration.

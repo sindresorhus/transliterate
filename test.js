@@ -19,6 +19,16 @@ test('customReplacements option', t => {
 	}), 'Zuerich');
 });
 
+test('customReplacements as Map', t => {
+	const customReplacements = new Map([
+		['&', ' and '],
+		['@', ' at '],
+	]);
+
+	t.is(transliterate('file & bar', {customReplacements}), 'file  and  bar');
+	t.is(transliterate('foo@bar', {customReplacements}), 'foo at bar');
+});
+
 test('all replacements are ASCII', t => {
 	const MAX_ASCII_CHARACTER_CODE = 127;
 
