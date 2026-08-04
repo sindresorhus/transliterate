@@ -47,6 +47,10 @@ export type Options = {
 	transliterate('Räksmörgås', {locale: 'sv'});
 	//=> 'Raksmorgas'
 
+	// Turkish
+	transliterate('Görüldüğü hâli ile o Çekoslovakyalılaştıramadığımızdanmış.');
+	//=> 'Goruldugu hali ile o Cekoslovakyalilastiramadigimizdanmis.'
+
 	// German: ä→ae, ö→oe
 	transliterate('Räksmörgås', {locale: 'de'});
 	//=> 'Raeksmoergas'

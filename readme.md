@@ -18,6 +18,9 @@ import transliterate from '@sindresorhus/transliterate';
 transliterate('Fußgängerübergänge');
 //=> 'Fussgaengeruebergaenge'
 
+transliterate('Görüldüğü hâli ile o Çekoslovakyalılaştıramadığımızdanmış.');
+//=> 'Goruldugu hali ile o Cekoslovakyalilastiramadigimizdanmis.'
+
 transliterate('Я люблю единорогов');
 //=> 'Ya lyublyu edinorogov'
 
