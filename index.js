@@ -2,12 +2,12 @@ import builtinReplacements from './replacements.js';
 import localeReplacements from './locale-replacements.js';
 
 // TODO: Use Regex.escape when targeting Node.js 24.
-const escapeRegex = string => string.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+const escapeRegex = string => string.replaceAll(/[$\(\)*+.?\[\\\]^\{\|\}]/gv, String.raw`\$&`);
 
 const buildReplacementPattern = replacements => {
 	// Sort by key length descending so longer patterns match first (e.g., 'ու' before 'ո')
-	const sortedKeys = [...replacements.keys()].sort((a, b) => b.length - a.length);
-	return new RegExp(sortedKeys.map(key => escapeRegex(key)).join('|'), 'gu');
+	const sortedKeys = replacements.keys().toArray().toSorted((a, b) => b.length - a.length);
+	return new RegExp(sortedKeys.map(key => escapeRegex(key)).join('|'), 'gv');
 };
 
 // Pre-compile the default pattern for performance
@@ -35,13 +35,13 @@ const normalizeLocale = locale => {
 
 	const normalizedLocale = locale.toLowerCase()
 		// Norwegian (no) is an alias for Norwegian Bokmål (nb)
-		.replace(/^no(-|$)/, 'nb$1');
+		.replace(/^no(?<suffix>-|$)/v, 'nb$<suffix>');
 
 	if (Object.hasOwn(localeReplacements, normalizedLocale)) {
 		return normalizedLocale;
 	}
 
-	const prefix = normalizedLocale.split('-')[0];
+	const prefix = normalizedLocale.split('-', 1)[0];
 	if (Object.hasOwn(localeReplacements, prefix)) {
 		return prefix;
 	}
@@ -74,15 +74,19 @@ export default function transliterate(string, options) {
 		// Sort by key length descending so longer patterns match first
 		customReplacements.sort((a, b) => b[0].length - a[0].length);
 		for (const [key, value] of customReplacements) {
+			// A replacement value containing `$&` or `$1` is expanded by `replaceAll`.
+			// That is long-standing behaviour and the lint rule that would forbid it
+			// can only be satisfied by changing what this option does, so leave it.
+			// eslint-disable-next-line unicorn/no-unsafe-string-replacement
 			string = string.replaceAll(key, value);
 		}
 	}
 
 	string = string.replace(pattern, match => replacements.get(match) ?? match);
-	string = string.normalize('NFD').replaceAll(/\p{Diacritic}/gu, '').normalize();
+	string = string.normalize('NFD').replaceAll(/\p{Diacritic}/gv, '').normalize();
 
-	// Normalize all dash types to hyphen-minus
-	string = string.replaceAll(/\p{Dash_Punctuation}/gu, '-');
+	// Normalize all dash types to hyphen-minus. Hyphen-minus itself is excluded, as replacing it with itself is only wasted work.
+	string = string.replaceAll(/[\p{Dash_Punctuation}--\-]/gv, '-');
 
 	return string;
 }

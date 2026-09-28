@@ -1,15 +1,30 @@
-import test from 'ava';
+/* eslint-disable node-test/no-conditional-assertion -- The assertion in the "all replacements are ASCII" test is table-driven: it must run once per entry in `replacements`. */
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import process from 'node:process';
 import replacements from './replacements.js';
 import transliterate from './index.js';
 
-test('main', t => {
-	t.is(transliterate('Foo ÿ'), 'Foo y');
-	t.is(transliterate('Hællæ, hva skjera?'), 'Haellae, hva skjera?');
-	t.is(transliterate('Déjà Vu!'), 'Deja Vu!');
+// Use CPU-time samples so host scheduling pauses do not dominate short benchmarks.
+const measureDuration = callback => {
+	const samples = Array.from({length: 5}, () => {
+		const start = process.cpuUsage();
+		callback();
+		const elapsed = process.cpuUsage(start);
+		return (elapsed.user + elapsed.system) / 1000;
+	});
+
+	return samples.toSorted((a, b) => a - b)[2];
+};
+
+test('main', () => {
+	assert.equal(transliterate('Foo ÿ'), 'Foo y');
+	assert.equal(transliterate('Hællæ, hva skjera?'), 'Haellae, hva skjera?');
+	assert.equal(transliterate('Déjà Vu!'), 'Deja Vu!');
 });
 
-test('customReplacements option', t => {
-	t.is(transliterate('Zürich', {
+test('customReplacements option', () => {
+	assert.equal(transliterate('Zürich', {
 		customReplacements: [
 			['ä', 'ae'],
 			['ö', 'oe'],
@@ -19,27 +34,27 @@ test('customReplacements option', t => {
 	}), 'Zuerich');
 });
 
-test('customReplacements as Map', t => {
+test('customReplacements as Map', () => {
 	const customReplacements = new Map([
 		['&', ' and '],
 		['@', ' at '],
 	]);
 
-	t.is(transliterate('file & bar', {customReplacements}), 'file  and  bar');
-	t.is(transliterate('foo@bar', {customReplacements}), 'foo at bar');
+	assert.equal(transliterate('file & bar', {customReplacements}), 'file  and  bar');
+	assert.equal(transliterate('foo@bar', {customReplacements}), 'foo at bar');
 });
 
-test('customReplacements that produce non-ASCII are transliterated', t => {
+test('customReplacements that produce non-ASCII are transliterated', () => {
 	// `customReplacements` output should be fully transliterated
-	t.is(transliterate('foo', {customReplacements: [['foo', 'öäü']]}), 'oeaeue');
-	t.is(transliterate('test', {customReplacements: [['test', 'Ö']]}), 'Oe');
-	t.is(transliterate('x', {customReplacements: [['x', 'Москва']]}), 'Moskva');
+	assert.equal(transliterate('foo', {customReplacements: [['foo', 'öäü']]}), 'oeaeue');
+	assert.equal(transliterate('test', {customReplacements: [['test', 'Ö']]}), 'Oe');
+	assert.equal(transliterate('x', {customReplacements: [['x', 'Москва']]}), 'Moskva');
 
 	// Non-transliterable characters pass through (e.g., emoji)
-	t.is(transliterate('unicorn', {customReplacements: [['unicorn', '🦄']]}), '🦄');
+	assert.equal(transliterate('unicorn', {customReplacements: [['unicorn', '🦄']]}), '🦄');
 });
 
-test('all replacements are ASCII', t => {
+test('all replacements are ASCII', () => {
 	const MAX_ASCII_CHARACTER_CODE = 127;
 
 	for (const [original, replacement] of replacements) {
@@ -47,213 +62,213 @@ test('all replacements are ASCII', t => {
 			continue;
 		}
 
-		t.true(replacement.codePointAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.codePointAt(0)})`);
+		assert.ok(replacement.codePointAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.codePointAt(0)})`);
 	}
 });
 
-test('supports German umlauts', t => {
-	t.is(transliterate('ä ö ü Ä Ö Ü ß'), 'ae oe ue Ae Oe Ue ss');
+test('supports German umlauts', () => {
+	assert.equal(transliterate('ä ö ü Ä Ö Ü ß'), 'ae oe ue Ae Oe Ue ss');
 });
 
-test('supports Vietnamese', t => {
-	t.is(transliterate('ố Ừ Đ'), 'o U D');
+test('supports Vietnamese', () => {
+	assert.equal(transliterate('ố Ừ Đ'), 'o U D');
 });
 
-test('supports Arabic', t => {
-	t.is(transliterate('ث س و'), 'th s w');
-	t.is(transliterate('إ'), 'a'); // Issue #9 - alif with hamza below should be 'a' not 'i'
+test('supports Arabic', () => {
+	assert.equal(transliterate('ث س و'), 'th s w');
+	assert.equal(transliterate('إ'), 'a'); // Issue #9 - alif with hamza below should be 'a' not 'i'
 });
 
-test('supports Persian / Farsi', t => {
-	t.is(transliterate('چ ی پ'), 'ch y p');
+test('supports Persian / Farsi', () => {
+	assert.equal(transliterate('چ ی پ'), 'ch y p');
 });
 
-test('supports Urdu', t => {
-	t.is(transliterate('ٹ ڈ ھ'), 't d h');
+test('supports Urdu', () => {
+	assert.equal(transliterate('ٹ ڈ ھ'), 't d h');
 });
 
-test('supports Pashto', t => {
-	t.is(transliterate('ګ ړ څ'), 'g r c');
+test('supports Pashto', () => {
+	assert.equal(transliterate('ګ ړ څ'), 'g r c');
 });
 
-test('supports Russian', t => {
-	t.is(transliterate('Ж п ю'), 'Zh p yu');
+test('supports Russian', () => {
+	assert.equal(transliterate('Ж п ю'), 'Zh p yu');
 });
 
-test('supports Romanian', t => {
-	t.is(transliterate('ș Ț'), 's T');
+test('supports Romanian', () => {
+	assert.equal(transliterate('ș Ț'), 's T');
 });
 
-test('supports Turkish', t => {
-	t.is(transliterate('İ ı Ş ş Ç ç Ğ ğ'), 'I i S s C c G g');
+test('supports Turkish', () => {
+	assert.equal(transliterate('İ ı Ş ş Ç ç Ğ ğ'), 'I i S s C c G g');
 });
 
-test('supports Armenian', t => {
-	t.is(transliterate('Ե ր և ա ն'), 'Ye r yev a n');
+test('supports Armenian', () => {
+	assert.equal(transliterate('Ե ր և ա ն'), 'Ye r yev a n');
 });
 
-test('supports Georgian', t => {
-	t.is(transliterate('თ პ ღ'), 't p gh');
+test('supports Georgian', () => {
+	assert.equal(transliterate('თ პ ღ'), 't p gh');
 });
 
-test('supports Latin', t => {
-	t.is(transliterate('Ä Ð Ø'), 'Ae D O');
+test('supports Latin', () => {
+	assert.equal(transliterate('Ä Ð Ø'), 'Ae D O');
 });
 
-test('supports Czech', t => {
-	t.is(transliterate('č ž Ň'), 'c z N');
+test('supports Czech', () => {
+	assert.equal(transliterate('č ž Ň'), 'c z N');
 });
 
-test('supports Danish', t => {
-	t.is(transliterate('æ ø å Æ Ø Å', {locale: 'da'}), 'ae oe aa Ae Oe Aa');
+test('supports Danish', () => {
+	assert.equal(transliterate('æ ø å Æ Ø Å', {locale: 'da'}), 'ae oe aa Ae Oe Aa');
 });
 
-test('supports Dhivehi', t => {
-	t.is(transliterate('ޝ ޓ ބ'), 'sh t b');
+test('supports Dhivehi', () => {
+	assert.equal(transliterate('ޝ ޓ ބ'), 'sh t b');
 });
 
-test('supports Greek', t => {
-	t.is(transliterate('θ Γ Ξ'), 'th G KS');
+test('supports Greek', () => {
+	assert.equal(transliterate('θ Γ Ξ'), 'th G KS');
 });
 
-test('supports Hungarian', t => {
-	t.is(transliterate('ű ö Ö', {locale: 'hu'}), 'u o O');
+test('supports Hungarian', () => {
+	assert.equal(transliterate('ű ö Ö', {locale: 'hu'}), 'u o O');
 });
 
-test('supports Latvian', t => {
-	t.is(transliterate('ā Ņ Ģ'), 'a N G');
+test('supports Latvian', () => {
+	assert.equal(transliterate('ā Ņ Ģ'), 'a N G');
 });
 
-test('supports Lithuanian', t => {
-	t.is(transliterate('ą į Š'), 'a i S');
+test('supports Lithuanian', () => {
+	assert.equal(transliterate('ą į Š'), 'a i S');
 });
 
-test('supports Macedonian', t => {
-	t.is(transliterate('Ќ љ Тс'), 'Kj lj Ts');
+test('supports Macedonian', () => {
+	assert.equal(transliterate('Ќ љ Тс'), 'Kj lj Ts');
 });
 
-test('supports Polish', t => {
-	t.is(transliterate('ą Ą Ł'), 'a A L');
+test('supports Polish', () => {
+	assert.equal(transliterate('ą Ą Ł'), 'a A L');
 });
 
-test('supports Serbian', t => {
-	t.is(transliterate('ђ џ Ђ Љ', {locale: 'sr'}), 'dj dz Dj Lj');
+test('supports Serbian', () => {
+	assert.equal(transliterate('ђ џ Ђ Љ', {locale: 'sr'}), 'dj dz Dj Lj');
 });
 
-test('supports Slovak', t => {
-	t.is(transliterate('ľ Ľ Ŕ'), 'l L R');
+test('supports Slovak', () => {
+	assert.equal(transliterate('ľ Ľ Ŕ'), 'l L R');
 });
 
-test('supports Swedish', t => {
-	t.is(transliterate('ä ö Ä Ö', {locale: 'sv'}), 'a o A O');
+test('supports Swedish', () => {
+	assert.equal(transliterate('ä ö Ä Ö', {locale: 'sv'}), 'a o A O');
 });
 
-test('supports Ukrainian', t => {
-	t.is(transliterate('Є Ґ ї'), 'Ye G yi');
+test('supports Ukrainian', () => {
+	assert.equal(transliterate('Є Ґ ї'), 'Ye G yi');
 });
 
-test('normalizes various dash types to hyphen', t => {
+test('normalizes various dash types to hyphen', () => {
 	// Testing various Unicode dash characters
-	t.is(transliterate('en–dash'), 'en-dash'); // En dash (U+2013)
-	t.is(transliterate('em—dash'), 'em-dash'); // Em dash (U+2014)
-	t.is(transliterate('minus−sign'), 'minus-sign'); // Minus sign (U+2212)
-	t.is(transliterate('figure‒dash'), 'figure-dash'); // Figure dash (U+2012)
-	t.is(transliterate('horizontal―bar'), 'horizontal-bar'); // Horizontal bar (U+2015)
-	t.is(transliterate('swung⁓dash'), 'swung-dash'); // Swung dash (U+2053)
-	t.is(transliterate('two⸺em⸻dash'), 'two-em-dash'); // Two-em dash (U+2E3A) and Three-em dash (U+2E3B)
+	assert.equal(transliterate('en–dash'), 'en-dash'); // En dash (U+2013)
+	assert.equal(transliterate('em—dash'), 'em-dash'); // Em dash (U+2014)
+	assert.equal(transliterate('minus−sign'), 'minus-sign'); // Minus sign (U+2212)
+	assert.equal(transliterate('figure‒dash'), 'figure-dash'); // Figure dash (U+2012)
+	assert.equal(transliterate('horizontal―bar'), 'horizontal-bar'); // Horizontal bar (U+2015)
+	assert.equal(transliterate('swung⁓dash'), 'swung-dash'); // Swung dash (U+2053)
+	assert.equal(transliterate('two⸺em⸻dash'), 'two-em-dash'); // Two-em dash (U+2E3A) and Three-em dash (U+2E3B)
 
 	// Combined test
-	t.is(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
+	assert.equal(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
 });
 
-test('locale option for language-specific transliteration', t => {
+test('locale option for language-specific transliteration', () => {
 	// Swedish
-	t.is(transliterate('Sju sjösjuka sjömän', {locale: 'sv'}), 'Sju sjosjuka sjoman');
-	t.is(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgas');
-	t.is(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgas'); // Full locale tag
+	assert.equal(transliterate('Sju sjösjuka sjömän', {locale: 'sv'}), 'Sju sjosjuka sjoman');
+	assert.equal(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgas');
+	assert.equal(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgas'); // Full locale tag
 
 	// German (default behavior)
-	t.is(transliterate('Räksmörgås', {locale: 'de'}), 'Raeksmoergas');
-	t.is(transliterate('Räksmörgås'), 'Raeksmoergas'); // Without locale, uses default
+	assert.equal(transliterate('Räksmörgås', {locale: 'de'}), 'Raeksmoergas');
+	assert.equal(transliterate('Räksmörgås'), 'Raeksmoergas'); // Without locale, uses default
 
 	// Danish
-	t.is(transliterate('Rød grød med fløde', {locale: 'da'}), 'Roed groed med floede');
-	t.is(transliterate('Blåbærsyltetøj', {locale: 'da'}), 'Blaabaersyltetoej');
+	assert.equal(transliterate('Rød grød med fløde', {locale: 'da'}), 'Roed groed med floede');
+	assert.equal(transliterate('Blåbærsyltetøj', {locale: 'da'}), 'Blaabaersyltetoej');
 
 	// Norwegian
-	t.is(transliterate('Rød grød med fløde', {locale: 'no'}), 'Roed groed med floede');
-	t.is(transliterate('Rød grød med fløde', {locale: 'nb'}), 'Roed groed med floede');
+	assert.equal(transliterate('Rød grød med fløde', {locale: 'no'}), 'Roed groed med floede');
+	assert.equal(transliterate('Rød grød med fløde', {locale: 'nb'}), 'Roed groed med floede');
 
 	// Unknown locale falls back to default
-	t.is(transliterate('Räksmörgås', {locale: 'unknown'}), 'Raeksmoergas');
+	assert.equal(transliterate('Räksmörgås', {locale: 'unknown'}), 'Raeksmoergas');
 
 	// Custom replacements still work and take precedence
-	t.is(transliterate('Räksmörgås', {
+	assert.equal(transliterate('Räksmörgås', {
 		locale: 'sv',
 		customReplacements: [['ä', 'ae']],
 	}), 'Raeksmorgas');
 });
 
-test('Turkish locale support - Issue #34', t => {
+test('Turkish locale support - Issue #34', () => {
 	// Turkish uses simplified transliterations compared to German
-	t.is(transliterate('Ağır şöförlük', {locale: 'tr'}), 'Agir soforluk');
-	t.is(transliterate('âöü', {locale: 'tr'}), 'aou');
-	t.is(transliterate('ÂÖÜ', {locale: 'tr'}), 'AOU');
+	assert.equal(transliterate('Ağır şöförlük', {locale: 'tr'}), 'Agir soforluk');
+	assert.equal(transliterate('âöü', {locale: 'tr'}), 'aou');
+	assert.equal(transliterate('ÂÖÜ', {locale: 'tr'}), 'AOU');
 
 	// Compare with German defaults
-	t.is(transliterate('öü', {locale: 'de'}), 'oeue');
-	t.is(transliterate('öü'), 'oeue'); // Default behavior
+	assert.equal(transliterate('öü', {locale: 'de'}), 'oeue');
+	assert.equal(transliterate('öü'), 'oeue'); // Default behavior
 });
 
-test('Latin Ō ō characters - Issue #35', t => {
-	t.is(transliterate('Ōdor'), 'Odor');
-	t.is(transliterate('tōkyo'), 'tokyo');
-	t.is(transliterate('Tōkyō'), 'Tokyo');
+test('Latin Ō ō characters - Issue #35', () => {
+	assert.equal(transliterate('Ōdor'), 'Odor');
+	assert.equal(transliterate('tōkyo'), 'tokyo');
+	assert.equal(transliterate('Tōkyō'), 'Tokyo');
 });
 
-test('Fixed (c) and (d) replacements - Issue #36', t => {
-	t.is(transliterate('ⓒ'), '(c)');
-	t.is(transliterate('ⓓ'), '(d)');
+test('Fixed (c) and (d) replacements - Issue #36', () => {
+	assert.equal(transliterate('ⓒ'), '(c)');
+	assert.equal(transliterate('ⓓ'), '(d)');
 });
 
-test('Armenian ու transliteration fix - Issue #31', t => {
+test('Armenian ու transliteration fix - Issue #31', () => {
 	// This was broken because ո was processed before ու
-	t.is(transliterate('ու'), 'u');
-	t.is(transliterate('ՈՒ'), 'U');
-	t.is(transliterate('Ու'), 'U');
+	assert.equal(transliterate('ու'), 'u');
+	assert.equal(transliterate('ՈՒ'), 'U');
+	assert.equal(transliterate('Ու'), 'U');
 
 	// Full test case from the issue
-	t.is(transliterate('ու ՈՒ Ու'), 'u U U');
+	assert.equal(transliterate('ու ՈՒ Ու'), 'u U U');
 });
 
-test('Hungarian locale support', t => {
-	t.is(transliterate('Magyar őslakók', {locale: 'hu'}), 'Magyar oslakok');
-	t.is(transliterate('űű öö', {locale: 'hu'}), 'uu oo');
+test('Hungarian locale support', () => {
+	assert.equal(transliterate('Magyar őslakók', {locale: 'hu'}), 'Magyar oslakok');
+	assert.equal(transliterate('űű öö', {locale: 'hu'}), 'uu oo');
 });
 
-test('Serbian locale support', t => {
-	t.is(transliterate('Ђоко џудиста', {locale: 'sr'}), 'Djoko dzudista');
-	t.is(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njikhova');
+test('Serbian locale support', () => {
+	assert.equal(transliterate('Ђоко џудиста', {locale: 'sr'}), 'Djoko dzudista');
+	assert.equal(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njikhova');
 });
 
-test('Azerbaijani ə and Ə support - Issue #33', t => {
-	t.is(transliterate('ədəbiyyat'), 'adabiyyat');
-	t.is(transliterate('Ədəbiyyat'), 'Adabiyyat');
-	t.is(transliterate('məşhur'), 'mashur');
+test('Azerbaijani ə and Ə support - Issue #33', () => {
+	assert.equal(transliterate('ədəbiyyat'), 'adabiyyat');
+	assert.equal(transliterate('Ədəbiyyat'), 'Adabiyyat');
+	assert.equal(transliterate('məşhur'), 'mashur');
 });
 
-test('Fixed replacement mistakes - Issue #32', t => {
-	t.is(transliterate('𝓀'), 'k'); // Was 'h'
-	t.is(transliterate('𝕆'), 'O'); // Was 'N'
+test('Fixed replacement mistakes - Issue #32', () => {
+	assert.equal(transliterate('𝓀'), 'k'); // Was 'h'
+	assert.equal(transliterate('𝕆'), 'O'); // Was 'N'
 });
 
-test('French œ ligature support - Issue #7', t => {
-	t.is(transliterate('œuf'), 'oeuf');
-	t.is(transliterate('Œuvre'), 'OEuvre');
-	t.is(transliterate('cœur'), 'coeur');
+test('French œ ligature support - Issue #7', () => {
+	assert.equal(transliterate('œuf'), 'oeuf');
+	assert.equal(transliterate('Œuvre'), 'OEuvre');
+	assert.equal(transliterate('cœur'), 'coeur');
 });
 
-test('detects overlapping replacements not handled by locales', t => {
+test('detects overlapping replacements not handled by locales', () => {
 	// This test helps identify character conflicts that might need locale-specific handling
 	const conflicts = [];
 	const charMap = new Map();
@@ -282,18 +297,16 @@ test('detects overlapping replacements not handled by locales', t => {
 	}
 
 	// The test passes if there are no conflicts
-	t.is(conflicts.length, 0, `Found ${conflicts.length} character conflicts in replacements`);
+	assert.equal(conflicts.length, 0, `Found ${conflicts.length} character conflicts in replacements`);
 });
 
-test('performance scales linearly (no ReDoS)', t => {
+test('performance scales linearly (no ReDoS)', () => {
 	// Test that processing time scales linearly with input size
 	// This catches potential ReDoS issues in the regex pattern
 
 	const measure = size => {
 		const string = 'äöüß'.repeat(size / 4);
-		const start = performance.now();
-		transliterate(string);
-		return performance.now() - start;
+		return measureDuration(() => transliterate(string));
 	};
 
 	// Warmup
@@ -305,21 +318,20 @@ test('performance scales linearly (no ReDoS)', t => {
 	// 100k should take roughly 10x as long as 10k (linear scaling)
 	// We use 20x as threshold to account for variance
 	const ratio = time100k / time10k;
-	t.true(ratio < 20, `Expected linear scaling but got ${ratio.toFixed(1)}x for 10x input`);
+	assert.ok(ratio < 20, `Expected linear scaling but got ${ratio.toFixed(1)}x for 10x input`);
 });
 
-test('handles large input efficiently', t => {
+test('handles large input efficiently', () => {
 	// Regression test for issue #40 - performance should not degrade with long strings
 	const longString = '<div class="container">'.repeat(1000);
-	const start = performance.now();
 	const result = transliterate(longString);
-	const elapsed = performance.now() - start;
+	const elapsed = measureDuration(() => transliterate(longString));
 
-	t.is(result, longString); // ASCII passthrough
-	t.true(elapsed < 100, `Expected < 100ms but took ${elapsed.toFixed(1)}ms`);
+	assert.equal(result, longString); // ASCII passthrough
+	assert.ok(elapsed < 100, `Expected < 100ms but took ${elapsed.toFixed(1)}ms`);
 });
 
-test('options do not cause performance regression', t => {
+test('options do not cause performance regression', () => {
 	// Regression test for issue #41 - locale and customReplacements should not be significantly slower
 	const iterations = 1000;
 	const testString = 'Ünïcödé strïng wïth lötś öf chäräctérs';
@@ -330,12 +342,11 @@ test('options do not cause performance regression', t => {
 			fn();
 		}
 
-		const start = performance.now();
-		for (let index = 0; index < iterations; index++) {
-			fn();
-		}
-
-		return performance.now() - start;
+		return measureDuration(() => {
+			for (let index = 0; index < iterations; index++) {
+				fn();
+			}
+		});
 	};
 
 	const baseTime = measure(() => transliterate(testString));
@@ -344,7 +355,7 @@ test('options do not cause performance regression', t => {
 	const combinedTime = measure(() => transliterate(testString, {locale: 'de', customReplacements: [['ö', 'oe']]}));
 
 	// Options should not be more than 5x slower than base case
-	t.true(localeTime / baseTime < 5, `locale option is ${(localeTime / baseTime).toFixed(1)}x slower than default`);
-	t.true(customTime / baseTime < 5, `customReplacements option is ${(customTime / baseTime).toFixed(1)}x slower than default`);
-	t.true(combinedTime / baseTime < 5, `locale + customReplacements is ${(combinedTime / baseTime).toFixed(1)}x slower than default`);
+	assert.ok(localeTime / baseTime < 5, `locale option is ${(localeTime / baseTime).toFixed(1)}x slower than default`);
+	assert.ok(customTime / baseTime < 5, `customReplacements option is ${(customTime / baseTime).toFixed(1)}x slower than default`);
+	assert.ok(combinedTime / baseTime < 5, `locale + customReplacements is ${(combinedTime / baseTime).toFixed(1)}x slower than default`);
 });
