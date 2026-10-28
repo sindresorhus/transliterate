@@ -139,6 +139,7 @@ const modifierLetterBases = new Map([
 	['₝', 'w'],
 	['₞', 'y'],
 	['₟', 'z'],
+
 	['ᶞ', 'd'], // Eth
 	['ᶴ', 'sh'], // Esh
 	['ᶾ', 'zh'], // Ezh
@@ -844,6 +845,314 @@ const replacements = [
 	['ю', 'yu'],
 	['Я', 'Ya'],
 	['я', 'ya'],
+	['Ѧ', 'E'], // Little yus
+	['ѧ', 'e'],
+	['Ѩ', 'Ye'], // Iotified little yus
+	['ѩ', 'ye'],
+	['Ѫ', 'U'], // Big yus
+	['ѫ', 'u'],
+	['Ѭ', 'Yu'], // Iotified big yus
+	['ѭ', 'yu'],
+	['Ѽ', 'O'], // Omega with titlo
+	['ѽ', 'o'],
+
+	// Cyrillic letters used by Kazakh, Tatar, Tajik, Bashkir, Chuvash, Gagauz, Ossetian, Azerbaijani, and the Siberian languages
+	['Ә', 'A'],
+	['ә', 'a'],
+	['Ғ', 'Gh'],
+	['ғ', 'gh'],
+	['Җ', 'J'],
+	['җ', 'j'],
+	['Қ', 'Q'],
+	['қ', 'q'],
+	['Ң', 'Ng'],
+	['ң', 'ng'],
+	['Һ', 'H'],
+	['һ', 'h'],
+	['Ө', 'O'],
+	['ө', 'o'],
+	['Ұ', 'U'],
+	['ұ', 'u'],
+	['Ү', 'U'],
+	['ү', 'u'],
+	['Ҳ', 'H'],
+	['ҳ', 'h'],
+	['Ҷ', 'J'],
+	['ҷ', 'j'],
+	['Ӯ', 'U'],
+	['ӯ', 'u'],
+	['Ӣ', 'I'],
+	['ӣ', 'i'],
+	['Ҝ', 'G'],
+	['ҝ', 'g'],
+	['Ҹ', 'J'],
+	['ҹ', 'j'],
+	['Ҡ', 'Q'],
+	['ҡ', 'q'],
+	['Ҫ', 'Th'],
+	['ҫ', 'th'],
+	['Ӑ', 'A'],
+	['ӑ', 'a'],
+	['Ӗ', 'E'],
+	['ӗ', 'e'],
+	['Ӂ', 'J'],
+	['ӂ', 'j'],
+	['Ӕ', 'Ae'],
+	['ӕ', 'ae'],
+	['Ӈ', 'Ng'],
+	['ӈ', 'ng'],
+	['Ӱ', 'U'],
+	['ӱ', 'u'],
+	['Ӳ', 'U'],
+	['ӳ', 'u'],
+	['Ӧ', 'O'],
+	['ӧ', 'o'],
+	['Ӵ', 'Ch'],
+	['ӵ', 'ch'],
+	['Ӹ', 'Y'],
+	['ӹ', 'y'],
+	['Ӄ', 'Q'],
+	['ӄ', 'q'],
+
+	// Cyrillic letters used by Abkhaz, Khakas, Kildin Sami, Nenets, Nivkh, and Chechen
+	['Ҋ', 'J'],
+	['ҋ', 'j'],
+	['Ҍ', ''],
+	['ҍ', ''],
+	['Ҏ', 'R'],
+	['ҏ', 'r'],
+	['Ҕ', 'Gh'],
+	['ҕ', 'gh'],
+	['Ҙ', 'Dh'],
+	['ҙ', 'dh'],
+	['Ҟ', 'K'],
+	['ҟ', 'k'],
+	['Ҥ', 'Ng'],
+	['ҥ', 'ng'],
+	['Ҧ', 'P'],
+	['ҧ', 'p'],
+	['Ҩ', 'H'],
+	['ҩ', 'h'],
+	['Ҭ', 'T'],
+	['ҭ', 't'],
+	['Ҵ', 'Ts'],
+	['ҵ', 'ts'],
+	['Ҽ', 'Ch'],
+	['ҽ', 'ch'],
+	['Ҿ', 'Ch'],
+	['ҿ', 'ch'],
+	['Ӏ', '\''], // Palochka, which marks a glottal stop
+	['ӏ', '\''],
+	['Ӆ', 'L'],
+	['ӆ', 'l'],
+	['Ӊ', 'N'],
+	['ӊ', 'n'],
+	['Ӌ', 'J'],
+	['ӌ', 'j'],
+	['Ӎ', 'M'],
+	['ӎ', 'm'],
+	['Ӡ', 'Dz'],
+	['ӡ', 'dz'],
+	['Ӷ', 'G'],
+	['ӷ', 'g'],
+	['Ӻ', 'Gh'],
+	['ӻ', 'gh'],
+	['Ӽ', 'Kh'],
+	['ӽ', 'kh'],
+	['Ӿ', 'H'],
+	['ӿ', 'h'],
+
+	// Cyrillic Supplement letters used by Komi, Khanty, Enets, Aleut, and Abaza
+	['Ԁ', 'D'],
+	['ԁ', 'd'],
+	['Ԃ', 'Dj'],
+	['ԃ', 'dj'],
+	['Ԅ', 'Zj'],
+	['ԅ', 'zj'],
+	['Ԇ', 'Dz'],
+	['ԇ', 'dz'],
+	['Ԉ', 'Lj'],
+	['ԉ', 'lj'],
+	['Ԋ', 'Nj'],
+	['ԋ', 'nj'],
+	['Ԍ', 'Sj'],
+	['ԍ', 'sj'],
+	['Ԏ', 'Tj'],
+	['ԏ', 'tj'],
+	['Ԑ', 'E'],
+	['ԑ', 'e'],
+	['Ԓ', 'L'],
+	['ԓ', 'l'],
+	['Ԕ', 'Lh'],
+	['ԕ', 'lh'],
+	['Ԗ', 'Rh'],
+	['ԗ', 'rh'],
+	['Ԙ', 'Yae'],
+	['ԙ', 'yae'],
+	['Ԛ', 'Q'],
+	['ԛ', 'q'],
+	['Ԝ', 'W'],
+	['ԝ', 'w'],
+	['Ԟ', 'Q'],
+	['ԟ', 'q'],
+	['Ԡ', 'L'],
+	['ԡ', 'l'],
+	['Ԣ', 'Ng'],
+	['ԣ', 'ng'],
+	['Ԥ', 'P'],
+	['ԥ', 'p'],
+	['Ԧ', 'Sh'],
+	['ԧ', 'sh'],
+	['Ԩ', 'Ng'],
+	['ԩ', 'ng'],
+	['Ԫ', 'Dzh'],
+	['ԫ', 'dzh'],
+	['Ԭ', 'Tch'],
+	['ԭ', 'tch'],
+	['Ԯ', 'L'],
+	['ԯ', 'l'],
+
+	// Cyrillic historic letter variants, which are alternative shapes of the same letters
+	['ᲀ', 'v'], // Rounded ve
+	['ᲁ', 'd'], // Long-legged de
+	['ᲂ', 'o'], // Narrow o
+	['ᲃ', 's'], // Wide es
+	['ᲄ', 't'], // Tall te
+	['ᲅ', 't'], // Three-legged te
+	['ᲆ', ''], // Tall hard sign
+	['ᲇ', 'e'], // Tall yat
+	['ᲈ', 'u'], // Unblended uk
+	['Ᲊ', 'C'], // Tje
+	['ᲊ', 'c'],
+
+	// Combining marks of Church Slavonic and Greek musical notation, which the strip would leave in the output
+	['҈', ''], // COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
+	['҉', ''], // COMBINING CYRILLIC MILLIONS SIGN
+	['ⷠ', ''], // COMBINING CYRILLIC LETTER BE
+	['ⷡ', ''], // COMBINING CYRILLIC LETTER VE
+	['ⷢ', ''], // COMBINING CYRILLIC LETTER GHE
+	['ⷣ', ''], // COMBINING CYRILLIC LETTER DE
+	['ⷤ', ''], // COMBINING CYRILLIC LETTER ZHE
+	['ⷥ', ''], // COMBINING CYRILLIC LETTER ZE
+	['ⷦ', ''], // COMBINING CYRILLIC LETTER KA
+	['ⷧ', ''], // COMBINING CYRILLIC LETTER EL
+	['ⷨ', ''], // COMBINING CYRILLIC LETTER EM
+	['ⷩ', ''], // COMBINING CYRILLIC LETTER EN
+	['ⷪ', ''], // COMBINING CYRILLIC LETTER O
+	['ⷫ', ''], // COMBINING CYRILLIC LETTER PE
+	['ⷬ', ''], // COMBINING CYRILLIC LETTER ER
+	['ⷭ', ''], // COMBINING CYRILLIC LETTER ES
+	['ⷮ', ''], // COMBINING CYRILLIC LETTER TE
+	['ⷯ', ''], // COMBINING CYRILLIC LETTER HA
+	['ⷰ', ''], // COMBINING CYRILLIC LETTER TSE
+	['ⷱ', ''], // COMBINING CYRILLIC LETTER CHE
+	['ⷲ', ''], // COMBINING CYRILLIC LETTER SHA
+	['ⷳ', ''], // COMBINING CYRILLIC LETTER SHCHA
+	['ⷴ', ''], // COMBINING CYRILLIC LETTER FITA
+	['ⷵ', ''], // COMBINING CYRILLIC LETTER ES-TE
+	['ⷶ', ''], // COMBINING CYRILLIC LETTER A
+	['ⷷ', ''], // COMBINING CYRILLIC LETTER IE
+	['ⷸ', ''], // COMBINING CYRILLIC LETTER DJERV
+	['ⷹ', ''], // COMBINING CYRILLIC LETTER MONOGRAPH UK
+	['ⷺ', ''], // COMBINING CYRILLIC LETTER YAT
+	['ⷻ', ''], // COMBINING CYRILLIC LETTER YU
+	['ⷼ', ''], // COMBINING CYRILLIC LETTER IOTIFIED A
+	['ⷽ', ''], // COMBINING CYRILLIC LETTER LITTLE YUS
+	['ⷾ', ''], // COMBINING CYRILLIC LETTER BIG YUS
+	['ⷿ', ''], // COMBINING CYRILLIC LETTER IOTIFIED BIG YUS
+	['꙰', ''], // COMBINING CYRILLIC TEN MILLIONS SIGN
+	['꙱', ''], // COMBINING CYRILLIC HUNDRED MILLIONS SIGN
+	['꙲', ''], // COMBINING CYRILLIC THOUSAND MILLIONS SIGN
+	['ꙴ', ''], // COMBINING CYRILLIC LETTER UKRAINIAN IE
+	['ꙵ', ''], // COMBINING CYRILLIC LETTER I
+	['ꙶ', ''], // COMBINING CYRILLIC LETTER YI
+	['ꙷ', ''], // COMBINING CYRILLIC LETTER U
+	['ꙸ', ''], // COMBINING CYRILLIC LETTER HARD SIGN
+	['ꙹ', ''], // COMBINING CYRILLIC LETTER YERU
+	['ꙺ', ''], // COMBINING CYRILLIC LETTER SOFT SIGN
+	['ꙻ', ''], // COMBINING CYRILLIC LETTER OMEGA
+	['𝉂', ''], // COMBINING GREEK MUSICAL TRISEME
+	['𝉃', ''], // COMBINING GREEK MUSICAL TETRASEME
+	['𝉄', ''], // COMBINING GREEK MUSICAL PENTASEME
+
+	// Cyrillic Extended-B historic letters, used in Church Slavonic
+	['ꙮ', 'o'], // Multiocular O
+	['꙳', '*'], // Slavonic asterisk
+	['꙾', '\''], // Kavykas, a quotation mark
+	['Ꙁ', 'Z'], // CYRILLIC CAPITAL LETTER ZEMLYA
+	['ꙁ', 'z'], // CYRILLIC SMALL LETTER ZEMLYA
+	['Ꙃ', 'Dz'], // CYRILLIC CAPITAL LETTER DZELO
+	['ꙃ', 'dz'], // CYRILLIC SMALL LETTER DZELO
+	['Ꙅ', 'Dz'], // CYRILLIC CAPITAL LETTER REVERSED DZE
+	['ꙅ', 'dz'], // CYRILLIC SMALL LETTER REVERSED DZE
+	['Ꙇ', 'I'], // CYRILLIC CAPITAL LETTER IOTA
+	['ꙇ', 'i'], // CYRILLIC SMALL LETTER IOTA
+	['Ꙉ', 'Dj'], // CYRILLIC CAPITAL LETTER DJERV
+	['ꙉ', 'dj'], // CYRILLIC SMALL LETTER DJERV
+	['Ꙋ', 'U'], // CYRILLIC CAPITAL LETTER MONOGRAPH UK
+	['ꙋ', 'u'], // CYRILLIC SMALL LETTER MONOGRAPH UK
+	['Ꙍ', 'O'], // CYRILLIC CAPITAL LETTER BROAD OMEGA
+	['ꙍ', 'o'], // CYRILLIC SMALL LETTER BROAD OMEGA
+	['Ꙏ', ''], // CYRILLIC CAPITAL LETTER NEUTRAL YER
+	['ꙏ', ''], // CYRILLIC SMALL LETTER NEUTRAL YER
+	['Ꙑ', 'Y'], // CYRILLIC CAPITAL LETTER YERU WITH BACK YER
+	['ꙑ', 'y'], // CYRILLIC SMALL LETTER YERU WITH BACK YER
+	['Ꙓ', 'Ye'], // CYRILLIC CAPITAL LETTER IOTIFIED YAT
+	['ꙓ', 'ye'], // CYRILLIC SMALL LETTER IOTIFIED YAT
+	['Ꙕ', 'Yu'], // CYRILLIC CAPITAL LETTER REVERSED YU
+	['ꙕ', 'yu'], // CYRILLIC SMALL LETTER REVERSED YU
+	['Ꙗ', 'Ya'], // CYRILLIC CAPITAL LETTER IOTIFIED A
+	['ꙗ', 'ya'], // CYRILLIC SMALL LETTER IOTIFIED A
+	['Ꙙ', 'E'], // CYRILLIC CAPITAL LETTER CLOSED LITTLE YUS
+	['ꙙ', 'e'], // CYRILLIC SMALL LETTER CLOSED LITTLE YUS
+	['Ꙛ', 'E'], // CYRILLIC CAPITAL LETTER BLENDED YUS
+	['ꙛ', 'e'], // CYRILLIC SMALL LETTER BLENDED YUS
+	['Ꙝ', 'Ye'], // CYRILLIC CAPITAL LETTER IOTIFIED CLOSED LITTLE YUS
+	['ꙝ', 'ye'], // CYRILLIC SMALL LETTER IOTIFIED CLOSED LITTLE YUS
+	['Ꙟ', 'Y'], // CYRILLIC CAPITAL LETTER YN
+	['ꙟ', 'y'], // CYRILLIC SMALL LETTER YN
+	['Ꙡ', 'Ts'], // CYRILLIC CAPITAL LETTER REVERSED TSE
+	['ꙡ', 'ts'], // CYRILLIC SMALL LETTER REVERSED TSE
+	['Ꙣ', 'D'], // CYRILLIC CAPITAL LETTER SOFT DE
+	['ꙣ', 'd'], // CYRILLIC SMALL LETTER SOFT DE
+	['Ꙥ', 'L'], // CYRILLIC CAPITAL LETTER SOFT EL
+	['ꙥ', 'l'], // CYRILLIC SMALL LETTER SOFT EL
+	['Ꙧ', 'M'], // CYRILLIC CAPITAL LETTER SOFT EM
+	['ꙧ', 'm'], // CYRILLIC SMALL LETTER SOFT EM
+	['Ꙩ', 'O'], // CYRILLIC CAPITAL LETTER MONOCULAR O
+	['ꙩ', 'o'], // CYRILLIC SMALL LETTER MONOCULAR O
+	['Ꙫ', 'O'], // CYRILLIC CAPITAL LETTER BINOCULAR O
+	['ꙫ', 'o'], // CYRILLIC SMALL LETTER BINOCULAR O
+	['Ꙭ', 'O'], // CYRILLIC CAPITAL LETTER DOUBLE MONOCULAR O
+	['ꙭ', 'o'], // CYRILLIC SMALL LETTER DOUBLE MONOCULAR O
+	['Ꚁ', 'D'], // CYRILLIC CAPITAL LETTER DWE
+	['ꚁ', 'd'], // CYRILLIC SMALL LETTER DWE
+	['Ꚃ', 'Dz'], // CYRILLIC CAPITAL LETTER DZWE
+	['ꚃ', 'dz'], // CYRILLIC SMALL LETTER DZWE
+	['Ꚅ', 'Zh'], // CYRILLIC CAPITAL LETTER ZHWE
+	['ꚅ', 'zh'], // CYRILLIC SMALL LETTER ZHWE
+	['Ꚇ', 'Ch'], // CYRILLIC CAPITAL LETTER CCHE
+	['ꚇ', 'ch'], // CYRILLIC SMALL LETTER CCHE
+	['Ꚉ', 'Dzh'], // CYRILLIC CAPITAL LETTER DZZE
+	['ꚉ', 'dzh'], // CYRILLIC SMALL LETTER DZZE
+	['Ꚋ', 'T'], // CYRILLIC CAPITAL LETTER TE WITH MIDDLE HOOK
+	['ꚋ', 't'], // CYRILLIC SMALL LETTER TE WITH MIDDLE HOOK
+	['Ꚍ', 'T'], // CYRILLIC CAPITAL LETTER TWE
+	['ꚍ', 't'], // CYRILLIC SMALL LETTER TWE
+	['Ꚏ', 'Ts'], // CYRILLIC CAPITAL LETTER TSWE
+	['ꚏ', 'ts'], // CYRILLIC SMALL LETTER TSWE
+	['Ꚑ', 'Ts'], // CYRILLIC CAPITAL LETTER TSSE
+	['ꚑ', 'ts'], // CYRILLIC SMALL LETTER TSSE
+	['Ꚓ', 'Ch'], // CYRILLIC CAPITAL LETTER TCHE
+	['ꚓ', 'ch'], // CYRILLIC SMALL LETTER TCHE
+	['Ꚕ', 'H'], // CYRILLIC CAPITAL LETTER HWE
+	['ꚕ', 'h'], // CYRILLIC SMALL LETTER HWE
+	['Ꚗ', 'Sh'], // CYRILLIC CAPITAL LETTER SHWE
+	['ꚗ', 'sh'], // CYRILLIC SMALL LETTER SHWE
+	['Ꚙ', 'Oo'], // CYRILLIC CAPITAL LETTER DOUBLE O
+	['ꚙ', 'oo'], // CYRILLIC SMALL LETTER DOUBLE O
+	['Ꚛ', 'O'], // CYRILLIC CAPITAL LETTER CROSSED O
+	['ꚛ', 'o'], // CYRILLIC SMALL LETTER CROSSED O
 
 	// Church Slavonic letters
 	['Ѣ', 'E'], // Yat
@@ -2506,6 +2815,43 @@ const replacements = [
 	['₎', ')'],
 	// Superscript and subscript letters
 	...modifierLetterReplacements,
+	// Cyrillic modifier letters, which Unicode classifies as diacritics, so they were deleted
+	['𞀰', 'a'], // MODIFIER LETTER CYRILLIC SMALL A
+	['𞀱', 'b'], // MODIFIER LETTER CYRILLIC SMALL BE
+	['𞀲', 'v'], // MODIFIER LETTER CYRILLIC SMALL VE
+	['𞀳', 'g'], // MODIFIER LETTER CYRILLIC SMALL GHE
+	['𞀴', 'd'], // MODIFIER LETTER CYRILLIC SMALL DE
+	['𞀵', 'e'], // MODIFIER LETTER CYRILLIC SMALL IE
+	['𞀶', 'zh'], // MODIFIER LETTER CYRILLIC SMALL ZHE
+	['𞀷', 'z'], // MODIFIER LETTER CYRILLIC SMALL ZE
+	['𞀸', 'i'], // MODIFIER LETTER CYRILLIC SMALL I
+	['𞀹', 'k'], // MODIFIER LETTER CYRILLIC SMALL KA
+	['𞀺', 'l'], // MODIFIER LETTER CYRILLIC SMALL EL
+	['𞀻', 'm'], // MODIFIER LETTER CYRILLIC SMALL EM
+	['𞀼', 'o'], // MODIFIER LETTER CYRILLIC SMALL O
+	['𞀽', 'p'], // MODIFIER LETTER CYRILLIC SMALL PE
+	['𞀾', 'r'], // MODIFIER LETTER CYRILLIC SMALL ER
+	['𞀿', 's'], // MODIFIER LETTER CYRILLIC SMALL ES
+	['𞁀', 't'], // MODIFIER LETTER CYRILLIC SMALL TE
+	['𞁁', 'u'], // MODIFIER LETTER CYRILLIC SMALL U
+	['𞁂', 'f'], // MODIFIER LETTER CYRILLIC SMALL EF
+	['𞁃', 'kh'], // MODIFIER LETTER CYRILLIC SMALL HA
+	['𞁄', 'ts'], // MODIFIER LETTER CYRILLIC SMALL TSE
+	['𞁅', 'ch'], // MODIFIER LETTER CYRILLIC SMALL CHE
+	['𞁆', 'sh'], // MODIFIER LETTER CYRILLIC SMALL SHA
+	['𞁇', 'y'], // MODIFIER LETTER CYRILLIC SMALL YERU
+	['𞁈', 'e'], // MODIFIER LETTER CYRILLIC SMALL E
+	['𞁉', 'yu'], // MODIFIER LETTER CYRILLIC SMALL YU
+	['𞁊', 'dzh'], // MODIFIER LETTER CYRILLIC SMALL DZZE
+	['𞁋', 'a'], // MODIFIER LETTER CYRILLIC SMALL SCHWA
+	['𞁌', 'i'], // MODIFIER LETTER CYRILLIC SMALL BYELORUSSIAN-UKRAINIAN I
+	['𞁍', 'j'], // MODIFIER LETTER CYRILLIC SMALL JE
+	['𞁎', 'o'], // MODIFIER LETTER CYRILLIC SMALL BARRED O
+	['𞁏', 'u'], // MODIFIER LETTER CYRILLIC SMALL STRAIGHT U
+	['𞁐', '\''], // MODIFIER LETTER CYRILLIC SMALL PALOCHKA
+	['𞁫', 'th'], // MODIFIER LETTER CYRILLIC SMALL ES WITH DESCENDER
+	['𞁬', 'y'], // MODIFIER LETTER CYRILLIC SMALL YERU WITH BACK YER
+	['𞁭', 'u'], // MODIFIER LETTER CYRILLIC SMALL STRAIGHT U WITH STROKE
 	['𝟎', '0'],
 	['𝟏', '1'],
 	['𝟐', '2'],

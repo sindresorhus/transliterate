@@ -313,6 +313,7 @@ test('French œ ligature support - Issue #7', () => {
 test('Church Slavonic Cyrillic letters are transliterated', () => {
 	assert.equal(transliterate('Ѣ Ѳ Ѵ Ѡ Ѻ'), 'E F I O O');
 	assert.equal(transliterate('Ѯ Ѱ Ѹ Ѥ Ҁ Ѿ'), 'Ks Ps U Ye Q Ot');
+	assert.equal(transliterate('Ѧ Ѩ Ѫ Ѭ Ѽ'), 'E Ye U Yu O');
 	assert.equal(transliterate('мѣра'), 'mera');
 });
 
@@ -338,12 +339,91 @@ test('Greek small capitals and phonetic modifier letters are transliterated', ()
 	assert.equal(transliterate('ᶞ ᶴ ᶾ ᶵ ᶹ ᶿ'), 'd sh zh t v th');
 });
 
+test('Cyrillic letters of the Caucasian and Siberian languages are transliterated', () => {
+	// Abkhaz, Khakas, Kildin Sami, Nenets, and Nivkh
+	assert.equal(transliterate('Ҕ ҕ Ҟ ҟ Ҧ ҧ Ҭ ҭ Ҵ ҵ Ҽ ҽ Ҿ ҿ Ӡ ӡ'), 'Gh gh K k P p T t Ts ts Ch ch Ch ch Dz dz');
+	assert.equal(transliterate('Ҋ ҋ Ҏ ҏ Ӆ ӆ Ӊ ӊ Ӎ ӎ'), 'J j R r L l N n M m');
+	assert.equal(transliterate('Ӌ ӌ Ӷ ӷ Ӻ ӻ Ӽ ӽ Ӿ ӿ'), 'J j G g Gh gh Kh kh H h');
+	assert.equal(transliterate('Ҥ ҥ Ҩ ҩ'), 'Ng ng H h');
+
+	// The palochka marks a glottal stop in Chechen, Ingush, and Avar
+	assert.equal(transliterate('Ӏ ӏ'), '\' \'');
+	assert.equal(transliterate('Соьлжа-ГӀала'), 'Solzha-G\'ala');
+
+	// The semisoft sign is silent, like the soft sign
+	assert.equal(transliterate('Ҍ ҍ'), ' ');
+});
+
+test('Cyrillic modifier letters are transliterated', () => {
+	// Unicode classifies these as diacritics, so they were deleted from the output
+	assert.equal(transliterate('𞀰 𞀱 𞀲 𞀳 𞀴 𞀵'), 'a b v g d e');
+	assert.equal(transliterate('𞀶 𞀷 𞀸 𞁀 𞁈 𞁉'), 'zh z i t e yu');
+	assert.equal(transliterate('𞁐 𞁊 𞁬 𞁭'), '\' dzh y u');
+	assert.equal(transliterate('а𞀰б'), 'aab');
+});
+
+test('Cyrillic Extended-B letters are transliterated', () => {
+	// The historic letters that Church Slavonic texts use
+	assert.equal(transliterate('ꙀꙁꙂꙃꙆꙇ'), 'ZzDzdzIi');
+	assert.equal(transliterate('Ꙉꙉ Ꙑꙑ Ꙓꙓ'), 'Djdj Yy Yeye');
+	assert.equal(transliterate('Ꙕꙕ Ꙗꙗ Ꙙꙙ Ꙝꙝ'), 'Yuyu Yaya Ee Yeye');
+	assert.equal(transliterate('Ꙟꙟ Ꙡꙡ Ꙣꙣ Ꙥꙥ Ꙧꙧ'), 'Yy Tsts Dd Ll Mm');
+	assert.equal(transliterate('Ꚁꚁ Ꚃꚃ Ꚅꚅ Ꚇꚇ'), 'Dd Dzdz Zhzh Chch');
+	assert.equal(transliterate('Ꚉꚉ Ꚋꚋ Ꚍꚍ Ꚏꚏ'), 'Dzhdzh Tt Tt Tsts');
+	assert.equal(transliterate('Ꚑꚑ Ꚓꚓ Ꚕꚕ Ꚗꚗ Ꚙꚙ Ꚛꚛ'), 'Tsts Chch Hh Shsh Oooo Oo');
+	assert.equal(transliterate('ꙮ ꙳ ꙾'), 'o * \'');
+	assert.equal(transliterate('Ꙏ'), ''); // Neutral yer is silent, like the hard sign
+});
+
+test('Church Slavonic combining marks are removed', () => {
+	// Unicode does not classify these combining marks as diacritics, so they stayed in the output
+	assert.equal(transliterate('҈҉'), '');
+	assert.equal(transliterate('ⷠⷡⷿ'), '');
+	assert.equal(transliterate('\u{1D242}\u{1D243}\u{1D244}'), '');
+	assert.equal(transliterate('бⷠг'), 'bg');
+});
+
+test('Cyrillic historic letter variants are transliterated', () => {
+	// These are alternative shapes of the same letters
+	assert.equal(transliterate('ᲀ ᲁ ᲂ ᲃ ᲄ ᲅ'), 'v d o s t t');
+	assert.equal(transliterate('ᲆ ᲇ ᲈ'), ' e u');
+	assert.equal(transliterate('Ᲊ ᲊ'), 'C c');
+});
+
+test('Cyrillic Supplement letters are transliterated', () => {
+	// Komi, Khanty, Enets, Aleut, and Abkhaz
+	assert.equal(transliterate('Ԁ ԁ Ԃ ԃ Ԅ ԅ Ԇ ԇ'), 'D d Dj dj Zj zj Dz dz');
+	assert.equal(transliterate('Ԉ ԉ Ԋ ԋ Ԍ ԍ Ԏ ԏ'), 'Lj lj Nj nj Sj sj Tj tj');
+	assert.equal(transliterate('Ԑ ԑ Ԓ ԓ Ԕ ԕ Ԗ ԗ'), 'E e L l Lh lh Rh rh');
+	assert.equal(transliterate('Ԙ ԙ Ԛ ԛ Ԝ ԝ Ԟ ԟ'), 'Yae yae Q q W w Q q');
+	assert.equal(transliterate('Ԡ ԡ Ԣ ԣ Ԥ ԥ Ԧ ԧ'), 'L l Ng ng P p Sh sh');
+	assert.equal(transliterate('Ԩ ԩ Ԫ ԫ Ԭ ԭ Ԯ ԯ'), 'Ng ng Dzh dzh Tch tch L l');
+});
+
 test('Georgian k and q are not swapped', () => {
 	// The aspirated k is ქ and the uvular q is ყ, so the country is `Sakartvelo`, not `Saqartvelo`
 	assert.equal(transliterate('საქართველო'), 'sakartvelo');
 	assert.equal(transliterate('ქართული'), 'kartuli');
 	assert.equal(transliterate('ყაზახეთი'), 'qazakheti');
 	assert.equal(transliterate('Ქ Ყ'), 'K Q');
+});
+
+test('Cyrillic letters of non-Russian languages are transliterated', () => {
+	// Kazakh
+	assert.equal(transliterate('Қазақстан Әлем Ғалам'), 'Qazaqstan Alem Ghalam');
+	assert.equal(transliterate('Қ Ң Һ Ұ Ү Ө'), 'Q Ng H U U O');
+
+	// Tatar
+	assert.equal(transliterate('Җыр Һава'), 'Jyr Hava');
+
+	// Tajik
+	assert.equal(transliterate('Тоҷикистон Ӯ Ҳ Ӣ'), 'Tojikiston U H I');
+
+	// Azerbaijani, Bashkir, Chuvash, Gagauz, and Ossetian
+	assert.equal(transliterate('Ҝ Ҹ Ҡ Ҫ Ӑ Ӗ Ӂ Ӕ'), 'G J Q Th A E J Ae');
+
+	// Northern and Siberian languages
+	assert.equal(transliterate('Ӈ Ӱ Ӳ Ӧ Ӵ Ӹ Ӄ'), 'Ng U U O Ch Y Q');
 });
 
 test('Georgian Mtavruli capitals match the Mkhedruli letters', () => {
