@@ -115,6 +115,9 @@ test('supports Danish', () => {
 
 test('supports Dhivehi', () => {
 	assert.equal(transliterate('ޝ ޓ ބ'), 'sh t b');
+
+	// Naa is the only Thaana letter that was missing
+	assert.equal(transliterate('ޱ'), 'n');
 });
 
 test('supports Greek', () => {
