@@ -246,6 +246,21 @@ test('Hungarian locale support', () => {
 	assert.equal(transliterate('űű öö', {locale: 'hu'}), 'uu oo');
 });
 
+test('Bulgarian locale support - Issue #43', () => {
+	assert.equal(transliterate('Щастие Хляб Ъгъл Кольо', {locale: 'bg'}), 'Shtastie Hlyab Agal Kolyo');
+	assert.equal(transliterate('Пещера Хасково', {locale: 'bg-BG'}), 'Peshtera Haskovo');
+
+	// Word-final ия is ia
+	assert.equal(transliterate('София, Мария-Антоанета', {locale: 'bg'}), 'Sofia, Maria-Antoaneta');
+
+	// The country name is an exception
+	assert.equal(transliterate('Република България', {locale: 'bg'}), 'Republika Bulgaria');
+	assert.equal(transliterate('БЪЛГАРИЯ българия', {locale: 'bg'}), 'BULGARIA bulgaria');
+	assert.equal(transliterate('Български ВЕЛИКОБЪЛГАРИЯ', {locale: 'bg'}), 'Balgarski VELIKOBALGARIA');
+	assert.equal(transliterate('Ияна Илиян', {locale: 'bg'}), 'Iyana Iliyan');
+	assert.equal(transliterate('София'), 'Sofiya');
+});
+
 test('Serbian locale support', () => {
 	assert.equal(transliterate('Ђоко џудиста', {locale: 'sr'}), 'Djoko dzudista');
 	assert.equal(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njikhova');
@@ -358,4 +373,28 @@ test('options do not cause performance regression', () => {
 	assert.ok(localeTime / baseTime < 5, `locale option is ${(localeTime / baseTime).toFixed(1)}x slower than default`);
 	assert.ok(customTime / baseTime < 5, `customReplacements option is ${(customTime / baseTime).toFixed(1)}x slower than default`);
 	assert.ok(combinedTime / baseTime < 5, `locale + customReplacements is ${(combinedTime / baseTime).toFixed(1)}x slower than default`);
+});
+
+test('Bulgarian hard sign is not consumed by the Russian digraph', () => {
+	assert.equal(transliterate('съединение Съединение СЪЕДИНЕНИЕ', {locale: 'bg'}), 'saedinenie Saedinenie SAEDINENIE');
+	assert.equal(transliterate('ъе Ъе ъЕ ЪЕ', {locale: 'bg-BG'}), 'ae Ae aE AE');
+	assert.equal(transliterate('подъезд'), 'podyezd');
+	assert.equal(transliterate('съезд'), 'syezd');
+});
+
+test('title-cased Bulgarian final iya uses ia', () => {
+	assert.equal(transliterate('Ия, Ияна, ИЯ, ия', {locale: 'bg'}), 'Ia, Iyana, IA, ia');
+});
+
+test('Bulgarian alphabet follows the Streamlined System', () => {
+	const alphabet = 'абвгдежзийклмнопрстуфхцчшщъьюя';
+	assert.equal(transliterate(alphabet, {locale: 'bg'}), 'abvgdezhziyklmnoprstufhtschshshtayyuya');
+	assert.equal(transliterate(alphabet.toUpperCase(), {locale: 'bg'}), 'ABVGDEZhZIYKLMNOPRSTUFHTsChShShtAYYuYa');
+});
+
+test('Bulgarian context respects word boundaries and custom replacements', () => {
+	assert.equal(transliterate('България-България (България)! Българията прабългария', {locale: 'bg'}), 'Bulgaria-Bulgaria (Bulgaria)! Balgariyata prabalgaria');
+	assert.equal(transliterate('Софиянски Ияна', {locale: 'bg'}), 'Sofiyanski Iyana');
+	assert.equal(transliterate('България', {locale: 'bg', customReplacements: [['България', '🦄']]}), '🦄');
+	assert.equal(transliterate('x', {locale: 'bg', customReplacements: [['x', 'България']]}), 'Bulgaria');
 });

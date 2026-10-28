@@ -77,6 +77,23 @@ const localeReplacements = {
 		['Ú', 'U'],
 	],
 
+	// Bulgarian (Streamlined System)
+	bg: [
+		['х', 'h'],
+		['Х', 'H'],
+		['щ', 'sht'],
+		['Щ', 'Sht'],
+		['ъ', 'a'],
+		['Ъ', 'A'],
+		['ь', 'y'],
+		['Ь', 'Y'],
+		// The Russian ъе digraph does not apply in Bulgarian.
+		['ъе', 'ae'],
+		['Ъе', 'Ae'],
+		['ъЕ', 'aE'],
+		['ЪЕ', 'AE'],
+	],
+
 	// Serbian
 	sr: [
 		['ђ', 'dj'],
@@ -104,3 +121,23 @@ for (const locale of Object.keys(localeReplacements)) {
 }
 
 export default localeReplacements;
+
+/**
+Language-specific replacements that depend on the surrounding text.
+
+Values are arrays of [pattern, replacement] pairs. They are applied before the other replacements.
+*/
+export const localeContextReplacements = {
+	// Bulgarian
+	bg: [
+		// The country name is a fixed exception (България → Bulgaria, not Balgaria)
+		[/(?<![\p{Letter}\p{Mark}])България(?![\p{Letter}\p{Mark}])/gv, 'Bulgaria'],
+		[/(?<![\p{Letter}\p{Mark}])БЪЛГАРИЯ(?![\p{Letter}\p{Mark}])/gv, 'BULGARIA'],
+		[/(?<![\p{Letter}\p{Mark}])българия(?![\p{Letter}\p{Mark}])/gv, 'bulgaria'],
+
+		// Word-final ия is ia (София → Sofia)
+		[/ия(?![\p{Letter}\p{Mark}])/gv, 'ia'],
+		[/Ия(?![\p{Letter}\p{Mark}])/gv, 'Ia'],
+		[/ИЯ(?![\p{Letter}\p{Mark}])/gv, 'IA'],
+	],
+};

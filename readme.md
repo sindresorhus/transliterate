@@ -102,6 +102,7 @@ transliterate('Räksmörgås', {locale: 'de'});
 
 The following locales have specific replacement rules when using the `locale` option:
 
+- `bg` - Bulgarian
 - `da` - Danish
 - `de` - German
 - `hu` - Hungarian
@@ -118,6 +119,7 @@ This includes special handling for:
 
 - Arabic
 - Armenian
+- Bulgarian
 - Czech
 - Danish
 - Dhivehi

@@ -1,5 +1,5 @@
 import builtinReplacements from './replacements.js';
-import localeReplacements from './locale-replacements.js';
+import localeReplacements, {localeContextReplacements} from './locale-replacements.js';
 
 // TODO: Use Regex.escape when targeting Node.js 24.
 const escapeRegex = string => string.replaceAll(/[$\(\)*+.?\[\\\]^\{\|\}]/gv, String.raw`\$&`);
@@ -25,6 +25,7 @@ for (const [locale, localeMap] of Object.entries(localeReplacements)) {
 	localeCache.set(locale, {
 		replacements,
 		pattern: buildReplacementPattern(replacements),
+		contextReplacements: localeContextReplacements[locale] ?? [],
 	});
 }
 
@@ -62,9 +63,10 @@ export default function transliterate(string, options) {
 
 	let replacements = builtinReplacements;
 	let pattern = defaultPattern;
+	let contextReplacements = [];
 
 	if (normalizedLocale) {
-		({replacements, pattern} = localeCache.get(normalizedLocale));
+		({replacements, pattern, contextReplacements} = localeCache.get(normalizedLocale));
 	}
 
 	string = string.normalize();
@@ -80,6 +82,10 @@ export default function transliterate(string, options) {
 			// eslint-disable-next-line unicorn/no-unsafe-string-replacement
 			string = string.replaceAll(key, value);
 		}
+	}
+
+	for (const [contextPattern, value] of contextReplacements) {
+		string = string.replaceAll(contextPattern, () => value);
 	}
 
 	string = string.replace(pattern, match => replacements.get(match) ?? match);
