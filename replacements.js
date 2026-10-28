@@ -153,6 +153,53 @@ const modifierLetterReplacements = modifierLetterRanges
 	// The rest are phonetic letters whose base letter is not ASCII either, so they stay unmapped
 	.filter(([, value]) => /^\p{ASCII}*$/v.test(value));
 
+// Georgian letters have four case variants of the same alphabet: Asomtavruli (U+10A0), Nuskhuri (U+2D00), Mkhedruli (U+10D0), and Mtavruli (U+1C90). The code points sit at fixed offsets from each other, so the alphabet is listed once.
+const georgianAlphabet = [
+	'a',
+	'b',
+	'g',
+	'd',
+	'e',
+	'v',
+	'z',
+	't',
+	'i',
+	'k',
+	'l',
+	'm',
+	'n',
+	'o',
+	'p',
+	'zh',
+	'r',
+	's',
+	't',
+	'u',
+	'ph',
+	'k',
+	'gh',
+	'q',
+	'sh',
+	'ch',
+	'ts',
+	'dz',
+	'ts',
+	'tch',
+	'kh',
+	'j',
+	'h',
+];
+
+const georgianReplacements = georgianAlphabet.flatMap((value, index) => {
+	const capitalized = value[0].toUpperCase() + value.slice(1);
+	return [
+		[String.fromCodePoint(0x10_D0 + index), value],
+		[String.fromCodePoint(0x2D_00 + index), value],
+		[String.fromCodePoint(0x1C_90 + index), capitalized],
+		[String.fromCodePoint(0x10_A0 + index), capitalized],
+	];
+});
+
 const replacements = [
 	// German umlauts
 	['ß', 'ss'],
@@ -943,39 +990,30 @@ const replacements = [
 	['ֈ', 'y'], // Yi with stroke, used in Lomavren
 
 	// Georgian
-	['ა', 'a'],
-	['ბ', 'b'],
-	['გ', 'g'],
-	['დ', 'd'],
-	['ე', 'e'],
-	['ვ', 'v'],
-	['ზ', 'z'],
-	['თ', 't'],
-	['ი', 'i'],
-	['კ', 'k'],
-	['ლ', 'l'],
-	['მ', 'm'],
-	['ნ', 'n'],
-	['ო', 'o'],
-	['პ', 'p'],
-	['ჟ', 'zh'],
-	['რ', 'r'],
-	['ს', 's'],
-	['ტ', 't'],
-	['უ', 'u'],
-	['ფ', 'ph'],
-	['ქ', 'q'],
-	['ღ', 'gh'],
-	['ყ', 'k'],
-	['შ', 'sh'],
-	['ჩ', 'ch'],
-	['ც', 'ts'],
-	['ძ', 'dz'],
-	['წ', 'ts'],
-	['ჭ', 'tch'],
-	['ხ', 'kh'],
-	['ჯ', 'j'],
-	['ჰ', 'h'],
+	...georgianReplacements,
+	// Archaic letters, which are not part of the modern alphabet. They have the same four case variants.
+	['ჱ', 'e'], // He, a long e
+	['ჲ', 'y'], // Hie
+	['ჳ', 'w'], // We
+	['ჴ', 'q'], // Har
+	['ჵ', 'o'], // Hoe, a long o
+	['ჶ', 'f'], // Fi, which has no Asomtavruli or Nuskhuri form
+	['ႁ', 'E'],
+	['ႂ', 'Y'],
+	['ႃ', 'W'],
+	['ႄ', 'Q'],
+	['ႅ', 'O'],
+	['ⴡ', 'e'],
+	['ⴢ', 'y'],
+	['ⴣ', 'w'],
+	['ⴤ', 'q'],
+	['ⴥ', 'o'],
+	['Ჱ', 'E'],
+	['Ჲ', 'Y'],
+	['Ჳ', 'W'],
+	['Ჴ', 'Q'],
+	['Ჵ', 'O'],
+	['Ჶ', 'F'],
 
 	// Czech
 	['č', 'c'],

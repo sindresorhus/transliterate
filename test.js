@@ -338,6 +338,44 @@ test('Greek small capitals and phonetic modifier letters are transliterated', ()
 	assert.equal(transliterate('ᶞ ᶴ ᶾ ᶵ ᶹ ᶿ'), 'd sh zh t v th');
 });
 
+test('Georgian k and q are not swapped', () => {
+	// The aspirated k is ქ and the uvular q is ყ, so the country is `Sakartvelo`, not `Saqartvelo`
+	assert.equal(transliterate('საქართველო'), 'sakartvelo');
+	assert.equal(transliterate('ქართული'), 'kartuli');
+	assert.equal(transliterate('ყაზახეთი'), 'qazakheti');
+	assert.equal(transliterate('Ქ Ყ'), 'K Q');
+});
+
+test('Georgian Mtavruli capitals match the Mkhedruli letters', () => {
+	assert.equal(transliterate('ᲒᲐᲛᲐᲠᲯᲝᲑᲐ'), 'GAMARJOBA');
+	assert.equal(transliterate('Ჟ Ფ Ქ Ღ Ყ Შ Ჩ Ც Ძ Წ Ჭ Ხ'), 'Zh Ph K Gh Q Sh Ch Ts Dz Ts Tch Kh');
+
+	// Every capital maps to the same letters as its lowercase partner, differing only in case
+	const mkhedruli = Array.from({length: 33}, (_, index) => String.fromCodePoint(0x10_D0 + index)).join('');
+	const mtavruli = Array.from({length: 33}, (_, index) => String.fromCodePoint(0x1_C90 + index)).join('');
+	assert.equal(transliterate(mtavruli).toLowerCase(), transliterate(mkhedruli));
+});
+
+test('Georgian Asomtavruli and Nuskhuri match their Mkhedruli letters', () => {
+	// Asomtavruli and Nuskhuri are historical case variants of Mkhedruli, at fixed code point offsets
+	const variant = (start, length = 33) => Array.from({length}, (_, index) => String.fromCodePoint(start + index)).join('');
+
+	assert.equal(transliterate(variant(0x10_A0)), transliterate(variant(0x1C_90)));
+	assert.equal(transliterate(variant(0x2D_00)), transliterate(variant(0x10_D0)));
+	assert.equal(transliterate('Ⴀ Ⴁ Ⴂ'), 'A B G');
+	assert.equal(transliterate('ⴀ ⴁ ⴂ'), 'a b g');
+	assert.equal(transliterate('ႱႠႵႠႰႧႥႤႪႭ'), 'SAKARTVELO');
+});
+
+test('archaic Georgian letters are transliterated', () => {
+	assert.equal(transliterate('ჱ ჲ ჳ ჴ ჵ ჶ'), 'e y w q o f');
+
+	// Each archaic letter has the same four case variants as the modern letters
+	assert.equal(transliterate('ႁ ႂ ႃ ႄ ႅ'), 'E Y W Q O');
+	assert.equal(transliterate('ⴡ ⴢ ⴣ ⴤ ⴥ'), 'e y w q o');
+	assert.equal(transliterate('Ჱ Ჲ Ჳ Ჴ Ჵ Ჶ'), 'E Y W Q O F');
+});
+
 test('Greek symbol and archaic letters are transliterated', () => {
 	// Typographic variants of the letters carry the same value as the letters
 	assert.equal(transliterate('ϐ ϑ ϕ ϖ ϰ ϱ ϲ ϳ ϵ ϗ'), 'v th f p k r s j e k');
