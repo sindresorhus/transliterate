@@ -306,6 +306,12 @@ test('French œ ligature support - Issue #7', () => {
 	assert.equal(transliterate('cœur'), 'coeur');
 });
 
+test('Church Slavonic Cyrillic letters are transliterated', () => {
+	assert.equal(transliterate('Ѣ Ѳ Ѵ Ѡ Ѻ'), 'E F I O O');
+	assert.equal(transliterate('Ѯ Ѱ Ѹ Ѥ Ҁ Ѿ'), 'Ks Ps U Ye Q Ot');
+	assert.equal(transliterate('мѣра'), 'mera');
+});
+
 test('Latin ligatures and digraphs are expanded', () => {
 	assert.equal(transliterate('ﬀﬁﬂﬃﬄﬅﬆ'), 'fffiflffifflstst');
 	assert.equal(transliterate('ſ'), 's');
@@ -416,6 +422,94 @@ test('supplemental punctuation is transliterated', () => {
 	assert.equal(transliterate('⸵ ⸱ ⸼'), '; . .');
 	assert.equal(transliterate('⸪ ⸫'), ': :');
 	assert.equal(transliterate('⹠⹡ ⹢a⹣'), '!! (a)');
+});
+
+test('Latin letters with a stroke, hook, or bar are transliterated', () => {
+	// The base letter is part of the character name, so the value is unambiguous
+	assert.equal(transliterate('ƀ Ƃ ƃ Ƈ ƈ Ƌ ƌ'), 'b B b C c D d');
+	assert.equal(transliterate('Ƒ ƒ Ɠ Ɨ ƚ Ɲ ƞ Ɵ'), 'F f G I l N n O');
+	assert.equal(transliterate('Ƣ ƣ Ƥ ƥ ƫ Ƭ ƭ Ʈ Ʊ'), 'Gh gh P p t T t T U');
+	assert.equal(transliterate('Ƶ ƶ Ƞ ȡ Ȣ ȣ Ȥ ȥ'), 'Z z N d Ou ou Z z');
+	assert.equal(transliterate('Ɩ ȴ ȵ ȶ ȷ Ⱥ Ȼ ȼ'), 'I l n t j A C c');
+	assert.equal(transliterate('Ƚ Ⱦ ȿ ɀ Ǿ ǿ'), 'L T s z O o');
+	assert.equal(transliterate('Ɂ ɂ Ƀ Ʉ Ɇ ɇ'), '\' \' B U E e');
+	assert.equal(transliterate('Ɉ ɉ ɋ Ɍ ɍ Ɏ ɏ'), 'J j q R r Y y');
+});
+
+test('Latin Extended-C letters are transliterated', () => {
+	assert.equal(transliterate('Ⱡ ⱡ Ɫ Ᵽ Ɽ'), 'L l L P R');
+	assert.equal(transliterate('ⱥ ⱦ Ⱨ ⱨ Ⱪ ⱪ'), 'a t H h K k');
+	assert.equal(transliterate('Ⱬ ⱬ Ɑ Ɱ Ɐ Ɒ'), 'Z z A M A A');
+	assert.equal(transliterate('ⱱ Ⱳ ⱳ ⱴ Ⱶ ⱶ'), 'v W w v H h');
+	assert.equal(transliterate('ⱸ ⱺ Ȿ Ɀ'), 'e o S Z');
+});
+
+test('Latin Extended-D letters with a distinguishing mark are transliterated', () => {
+	assert.equal(transliterate('Ꜧ ꜧ Ꜳ ꜳ Ꜵ ꜵ Ꜷ ꜷ'), 'H h Aa aa Ao ao Au au');
+	assert.equal(transliterate('Ꝁ ꝁ Ꝃ ꝃ Ꝅ ꝅ Ꝉ ꝉ'), 'K k K k K k L l');
+	assert.equal(transliterate('Ꝋ ꝋ Ꝏ ꝏ Ꝑ ꝑ Ꝓ ꝓ'), 'O o Oo oo P p P p');
+	assert.equal(transliterate('Ꝕ ꝕ Ꝗ ꝗ Ꝙ ꝙ Ꝟ ꝟ'), 'P p Q q Q q V v');
+	assert.equal(transliterate('Ꝡ ꝡ Ꝩ ꝩ Ꝫ ꝫ Ꝭ ꝭ Ꝯ ꝯ'), 'Vy vy V v Et et Is is Con con');
+	assert.equal(transliterate('Ꞑ ꞑ Ꞓ ꞓ ꞔ ꞕ Ꞗ ꞗ'), 'N n C c c h B b');
+	assert.equal(transliterate('Ꞙ ꞙ Ꞡ ꞡ Ꞣ ꞣ Ꞥ ꞥ'), 'F f G g K k N n');
+	assert.equal(transliterate('Ꞧ ꞧ Ꞩ ꞩ Ɦ Ɬ Ʝ'), 'R r S s H L J');
+	assert.equal(transliterate('Ꞹ ꞹ Ꞔ Ʂ Ᶎ'), 'U u C S Z');
+	assert.equal(transliterate('Ꟈ ꟈ Ꟊ ꟊ Ꟍ ꟍ ꞎ'), 'D d S s S s l');
+});
+
+test('Latin Extended-D letters are transliterated', () => {
+	// Modifier letter capitals, which Unicode classifies as diacritics
+	assert.equal(transliterate('꟱ ꟲ ꟳ ꟴ'), 'S C F Q');
+	assert.equal(transliterate('Ꟶ ꟶ ꟷ'), 'H h I');
+	assert.equal(transliterate('ꟸ ꟹ ꟺ'), 'H oe m');
+});
+
+test('Latin letters of African orthographies are transliterated', () => {
+	// Hausa and Fula
+	assert.equal(transliterate('Ɓ ɓ Ɗ ɗ Ɖ ɖ Ƙ ƙ Ƴ ƴ'), 'B b D d D d K k Y y');
+	assert.equal(transliterate('ƙarfin ɗan Adam'), 'karfin dan Adam');
+
+	// Ewe and linguistic writing
+	assert.equal(transliterate('Ɣ ɣ Ʋ ʋ Ʃ ʃ Ʒ ʒ'), 'Gh gh V v Sh sh Zh zh');
+});
+
+test('Latin letters outside the basic set are transliterated', () => {
+	assert.equal(transliterate('1ª 2º'), '1a 2o');
+
+	// The micro sign is a compatibility variant of mu, but it means `micro`
+	assert.equal(transliterate('5µm'), '5um');
+
+	assert.equal(transliterate('ĸ Ŀ ŀ ŉ'), 'k L l \'n');
+	assert.equal(transliterate('Ŋ ŋ Ŧ ŧ'), 'N n T t');
+	assert.equal(transliterate('Ɛ ɛ Ɔ ɔ ǝ'), 'E e O o e');
+	assert.equal(transliterate('Ǥ ǥ Ȝ ȝ'), 'G g Y y');
+	assert.equal(transliterate('Ƿ ƿ Ǝ ǝ'), 'W w E e');
+	assert.equal(transliterate('Ƕ ƕ'), 'Hv hv');
+});
+
+test('superscript and subscript characters are transliterated', () => {
+	assert.equal(transliterate('x² y³ z¹'), 'x2 y3 z1');
+	assert.equal(transliterate('H₂O CO₂'), 'H2O CO2');
+	assert.equal(transliterate('⁰¹²³⁴⁵⁶⁷⁸⁹'), '0123456789');
+	assert.equal(transliterate('₀₁₂₃₄₅₆₇₈₉'), '0123456789');
+	assert.equal(transliterate('⁺⁻⁼⁽⁾ ₊₋₌₍₎'), '+-=() +-=()');
+});
+
+test('superscript and subscript letters are transliterated', () => {
+	// Superscript digits already work, so their letter counterparts must too. Unicode classifies these as diacritics, so without a replacement they were dropped from the output.
+	assert.equal(transliterate('xⁿ xⁱ'), 'xn xi');
+	assert.equal(transliterate('2ⁿᵈ 3ʳᵈ'), '2nd 3rd');
+	assert.equal(transliterate('xₐ xₑ xₒ xₓ xₕ xₖ xₗ xₘ xₙ xₚ xₛ xₜ'), 'xa xe xo xx xh xk xl xm xn xp xs xt');
+	assert.equal(transliterate('xᵃ xᵇ xᵈ xᵉ xᵍ xᵏ xᵐ xᵒ xᵖ xᵗ xᵘ xᵛ'), 'xa xb xd xe xg xk xm xo xp xt xu xv');
+	assert.equal(transliterate('ᴬ ᴮ ᴰ ᴱ ᴳ'), 'A B D E G');
+	assert.equal(transliterate('ʰ ʷ ʲ ˡ ˢ ˣ'), 'h w j l s x');
+
+	// A modifier letter agrees with the base letter it decomposes to
+	assert.equal(transliterate('ᵊ ₔ ᵑ'), 'a a n');
+
+	// The later subscript letters and the phonetic modifier letters
+	assert.equal(transliterate('₝ ₞ ₟'), 'w y z');
+	assert.equal(transliterate('ᶜ ᶠ ᶻ 𐞥'), 'c f z q');
 });
 
 test('currency and fraction symbols are transliterated', () => {
@@ -801,10 +895,7 @@ test('custom replacements preserve sequential replacement and JavaScript substit
 	assert.equal(transliterate('xx', {customReplacements: [['x', '[$&]']]}), '[x][x]');
 });
 
-test('superscript and subscript characters are transliterated', () => {
-	assert.equal(transliterate('x² y³ z¹'), 'x2 y3 z1');
-	assert.equal(transliterate('H₂O CO₂'), 'H2O CO2');
-	assert.equal(transliterate('⁰¹²³⁴⁵⁶⁷⁸⁹'), '0123456789');
-	assert.equal(transliterate('₀₁₂₃₄₅₆₇₈₉'), '0123456789');
-	assert.equal(transliterate('⁺⁻⁼⁽⁾ ₊₋₌₍₎'), '+-=() +-=()');
+test('Latin gha is a consonant rather than an oi digraph', () => {
+	assert.equal(transliterate('Ƣƣ'), 'Ghgh');
+	assert.equal(transliterate('ƣalaba'), 'ghalaba');
 });

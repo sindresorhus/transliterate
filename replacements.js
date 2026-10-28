@@ -86,6 +86,67 @@ const compatibilityFormReplacements = [
 	...[...uppercaseLetters, ...codePointRange(0x30, 0x39)].map((character, index) => [String.fromCodePoint(0x1_CC_D6 + index), character]),
 ];
 
+// Modifier letters are superscript and subscript copies of a base letter. Unicode classifies them as diacritics, so they must map to the base letter before diacritics are removed.
+const modifierLetterRanges = [
+	[0x02_B0, 0x02_B8], // `ʰ` to `ʸ`
+	[0x02_E1, 0x02_E3], // `ˡ`, `ˢ`, `ˣ`
+	[0x1D_2C, 0x1D_6A], // Modifier capitals, small letters, and subscripts, including the Greek ones
+	[0x1D_9B, 0x1D_BF], // Phonetic Extensions modifier letters
+	[0x20_71, 0x20_71], // `ⁱ`
+	[0x20_7F, 0x20_7F], // `ⁿ`
+	[0x20_90, 0x20_9F], // `ₐ` to `ₜ`, and the later `w`, `y`, `z`
+	[0xAB_5C, 0xAB_5F], // Phonetic Extensions Supplement
+	[0xAB_69, 0xAB_69],
+	[0x1_07_80, 0x1_07_BA], // Latin Extended-F
+];
+
+// Base letters for the modifier letters that decompose to another non-ASCII letter. The value agrees with the transliteration of the base letter.
+const modifierLetterBases = new Map([
+	['ʱ', 'h'],
+	['ʴ', 'r'],
+	['ʵ', 'r'],
+	['ʶ', 'r'],
+	['ᴭ', 'AE'],
+	['ᴯ', 'B'],
+	['ᴲ', 'E'],
+	['ᴻ', 'N'],
+	['ᴽ', 'Ou'],
+	['ᵄ', 'a'],
+	['ᵅ', 'a'],
+	['ᵆ', 'ae'],
+	['ᵊ', 'a'], // Schwa, like `ə`
+	['ᵋ', 'e'],
+	['ᵌ', 'e'],
+	['ᵎ', 'i'],
+	['ᵑ', 'n'], // Eng, like `ŋ`
+	['ᵓ', 'o'],
+	['ᵔ', 'o'],
+	['ᵕ', 'o'],
+	['ᵙ', 'u'],
+	['ᵚ', 'u'],
+	['ᵜ', 'e'],
+	['ᵝ', 'v'], // Beta
+	['ᵞ', 'g'], // Gamma
+	['ᵟ', 'd'], // Delta
+	['ᵠ', 'f'], // Phi
+	['ᵡ', 'x'], // Chi
+	['ᵦ', 'v'],
+	['ᵧ', 'g'],
+	['ᵨ', 'r'],
+	['ᵩ', 'f'],
+	['ᵪ', 'x'],
+	['ₔ', 'a'], // Schwa, like `ə`
+	['₝', 'w'],
+	['₞', 'y'],
+	['₟', 'z'],
+]);
+
+const modifierLetterReplacements = modifierLetterRanges
+	.flatMap(([start, end]) => Array.from({length: end - start + 1}, (_, index) => String.fromCodePoint(start + index)))
+	.map(character => [character, modifierLetterBases.get(character) ?? character.normalize('NFKC')])
+	// The rest are phonetic letters whose base letter is not ASCII either, so they stay unmapped
+	.filter(([, value]) => /^\p{ASCII}*$/v.test(value));
+
 const replacements = [
 	// German umlauts
 	['ß', 'ss'],
@@ -170,6 +231,236 @@ const replacements = [
 	['ý', 'y'],
 	['þ', 'th'],
 	['ÿ', 'y'],
+
+	// Other Latin letters
+	['ª', 'a'], // Feminine ordinal
+	['º', 'o'], // Masculine ordinal
+	['µ', 'u'], // Micro sign
+	['ĸ', 'k'], // Kra
+	['Ŀ', 'L'], // L with middle dot
+	['ŀ', 'l'],
+	['ŉ', '\'n'], // N preceded by apostrophe
+	['Ŋ', 'N'], // Eng
+	['ŋ', 'n'],
+	['Ŧ', 'T'], // T with stroke
+	['ŧ', 't'],
+	['Ɓ', 'B'], // B with hook
+	['ɓ', 'b'],
+	['Ɗ', 'D'], // D with hook
+	['ɗ', 'd'],
+	['Ɖ', 'D'], // African D
+	['ɖ', 'd'],
+	['Ƙ', 'K'], // K with hook
+	['ƙ', 'k'],
+	['Ƴ', 'Y'], // Y with hook
+	['ƴ', 'y'],
+	['Ɣ', 'Gh'], // Gamma
+	['ɣ', 'gh'],
+	['Ʋ', 'V'], // V with hook
+	['ʋ', 'v'],
+	['Ʃ', 'Sh'], // Esh
+	['ʃ', 'sh'],
+	['Ʒ', 'Zh'], // Ezh
+	['ʒ', 'zh'],
+	['Ɛ', 'E'], // Open E
+	['ɛ', 'e'],
+	['Ɔ', 'O'], // Open O
+	['ɔ', 'o'],
+	['ǝ', 'e'], // Turned E
+	['Ǥ', 'G'], // G with stroke
+	['ǥ', 'g'],
+	['Ǝ', 'E'], // Reversed E, the capital of turned E
+	['Ƕ', 'Hv'], // Hwair
+	['ƕ', 'hv'],
+	['Ƿ', 'W'], // Wynn
+	['ƿ', 'w'],
+	['Ȝ', 'Y'], // Yogh
+	['ȝ', 'y'],
+
+	// Letters with a stroke, hook, bar, or curl, whose base letter is part of the character name
+	['ƀ', 'b'], // LATIN SMALL LETTER B WITH STROKE
+	['Ƃ', 'B'], // LATIN CAPITAL LETTER B WITH TOPBAR
+	['ƃ', 'b'], // LATIN SMALL LETTER B WITH TOPBAR
+	['Ƈ', 'C'], // LATIN CAPITAL LETTER C WITH HOOK
+	['ƈ', 'c'], // LATIN SMALL LETTER C WITH HOOK
+	['Ƌ', 'D'], // LATIN CAPITAL LETTER D WITH TOPBAR
+	['ƌ', 'd'], // LATIN SMALL LETTER D WITH TOPBAR
+	['Ƒ', 'F'], // LATIN CAPITAL LETTER F WITH HOOK
+	['ƒ', 'f'], // LATIN SMALL LETTER F WITH HOOK
+	['Ɠ', 'G'], // LATIN CAPITAL LETTER G WITH HOOK
+	['Ɩ', 'I'], // LATIN CAPITAL LETTER IOTA
+	['Ɨ', 'I'], // LATIN CAPITAL LETTER I WITH STROKE
+	['ƚ', 'l'], // LATIN SMALL LETTER L WITH BAR
+	['Ɲ', 'N'], // LATIN CAPITAL LETTER N WITH LEFT HOOK
+	['ƞ', 'n'], // LATIN SMALL LETTER N WITH LONG RIGHT LEG
+	['Ɵ', 'O'], // LATIN CAPITAL LETTER O WITH MIDDLE TILDE
+	['Ƣ', 'Gh'], // LATIN CAPITAL LETTER GHA (the Unicode name OI is a misnomer)
+	['ƣ', 'gh'], // LATIN SMALL LETTER GHA
+	['Ƥ', 'P'], // LATIN CAPITAL LETTER P WITH HOOK
+	['ƥ', 'p'], // LATIN SMALL LETTER P WITH HOOK
+	['ƫ', 't'], // LATIN SMALL LETTER T WITH PALATAL HOOK
+	['Ƭ', 'T'], // LATIN CAPITAL LETTER T WITH HOOK
+	['ƭ', 't'], // LATIN SMALL LETTER T WITH HOOK
+	['Ʈ', 'T'], // LATIN CAPITAL LETTER T WITH RETROFLEX HOOK
+	['Ʊ', 'U'], // LATIN CAPITAL LETTER UPSILON
+	['Ƶ', 'Z'], // LATIN CAPITAL LETTER Z WITH STROKE
+	['ƶ', 'z'], // LATIN SMALL LETTER Z WITH STROKE
+	['Ǿ', 'O'], // LATIN CAPITAL LETTER O WITH STROKE AND ACUTE
+	['ǿ', 'o'], // LATIN SMALL LETTER O WITH STROKE AND ACUTE
+	['Ƞ', 'N'], // LATIN CAPITAL LETTER N WITH LONG RIGHT LEG
+	['ȡ', 'd'], // LATIN SMALL LETTER D WITH CURL
+	['Ȣ', 'Ou'], // LATIN CAPITAL LETTER OU
+	['ȣ', 'ou'], // LATIN SMALL LETTER OU
+	['Ȥ', 'Z'], // LATIN CAPITAL LETTER Z WITH HOOK
+	['ȥ', 'z'], // LATIN SMALL LETTER Z WITH HOOK
+	['ȴ', 'l'], // LATIN SMALL LETTER L WITH CURL
+	['ȵ', 'n'], // LATIN SMALL LETTER N WITH CURL
+	['ȶ', 't'], // LATIN SMALL LETTER T WITH CURL
+	['ȷ', 'j'], // LATIN SMALL LETTER DOTLESS J
+	['Ⱥ', 'A'], // LATIN CAPITAL LETTER A WITH STROKE
+	['Ȼ', 'C'], // LATIN CAPITAL LETTER C WITH STROKE
+	['ȼ', 'c'], // LATIN SMALL LETTER C WITH STROKE
+	['Ƚ', 'L'], // LATIN CAPITAL LETTER L WITH BAR
+	['Ⱦ', 'T'], // LATIN CAPITAL LETTER T WITH DIAGONAL STROKE
+	['ȿ', 's'], // LATIN SMALL LETTER S WITH SWASH TAIL
+	['ɀ', 'z'], // LATIN SMALL LETTER Z WITH SWASH TAIL
+	['Ɂ', '\''], // LATIN CAPITAL LETTER GLOTTAL STOP
+	['ɂ', '\''], // LATIN SMALL LETTER GLOTTAL STOP
+	['Ƀ', 'B'], // LATIN CAPITAL LETTER B WITH STROKE
+	['Ʉ', 'U'], // LATIN CAPITAL LETTER U BAR
+	['Ɇ', 'E'], // LATIN CAPITAL LETTER E WITH STROKE
+	['ɇ', 'e'], // LATIN SMALL LETTER E WITH STROKE
+	['Ɉ', 'J'], // LATIN CAPITAL LETTER J WITH STROKE
+	['ɉ', 'j'], // LATIN SMALL LETTER J WITH STROKE
+	['ɋ', 'q'], // LATIN SMALL LETTER Q WITH HOOK TAIL
+	['Ɍ', 'R'], // LATIN CAPITAL LETTER R WITH STROKE
+	['ɍ', 'r'], // LATIN SMALL LETTER R WITH STROKE
+	['Ɏ', 'Y'], // LATIN CAPITAL LETTER Y WITH STROKE
+	['ɏ', 'y'], // LATIN SMALL LETTER Y WITH STROKE
+
+	// Latin Extended-C
+	['Ⱡ', 'L'], // LATIN CAPITAL LETTER L WITH DOUBLE BAR
+	['ⱡ', 'l'], // LATIN SMALL LETTER L WITH DOUBLE BAR
+	['Ɫ', 'L'], // LATIN CAPITAL LETTER L WITH MIDDLE TILDE
+	['Ᵽ', 'P'], // LATIN CAPITAL LETTER P WITH STROKE
+	['Ɽ', 'R'], // LATIN CAPITAL LETTER R WITH TAIL
+	['ⱥ', 'a'], // LATIN SMALL LETTER A WITH STROKE
+	['ⱦ', 't'], // LATIN SMALL LETTER T WITH DIAGONAL STROKE
+	['Ⱨ', 'H'], // LATIN CAPITAL LETTER H WITH DESCENDER
+	['ⱨ', 'h'], // LATIN SMALL LETTER H WITH DESCENDER
+	['Ⱪ', 'K'], // LATIN CAPITAL LETTER K WITH DESCENDER
+	['ⱪ', 'k'], // LATIN SMALL LETTER K WITH DESCENDER
+	['Ⱬ', 'Z'], // LATIN CAPITAL LETTER Z WITH DESCENDER
+	['ⱬ', 'z'], // LATIN SMALL LETTER Z WITH DESCENDER
+	['Ɑ', 'A'], // LATIN CAPITAL LETTER ALPHA
+	['Ɱ', 'M'], // LATIN CAPITAL LETTER M WITH HOOK
+	['Ɐ', 'A'], // LATIN CAPITAL LETTER TURNED A
+	['Ɒ', 'A'], // LATIN CAPITAL LETTER TURNED ALPHA
+	['ⱱ', 'v'], // LATIN SMALL LETTER V WITH RIGHT HOOK
+	['Ⱳ', 'W'], // LATIN CAPITAL LETTER W WITH HOOK
+	['ⱳ', 'w'], // LATIN SMALL LETTER W WITH HOOK
+	['ⱴ', 'v'], // LATIN SMALL LETTER V WITH CURL
+	['Ⱶ', 'H'], // LATIN CAPITAL LETTER HALF H
+	['ⱶ', 'h'], // LATIN SMALL LETTER HALF H
+	['ⱸ', 'e'], // LATIN SMALL LETTER E WITH NOTCH
+	['ⱺ', 'o'], // LATIN SMALL LETTER O WITH LOW RING INSIDE
+	['Ȿ', 'S'], // LATIN CAPITAL LETTER S WITH SWASH TAIL
+	['Ɀ', 'Z'], // LATIN CAPITAL LETTER Z WITH SWASH TAIL
+
+	// Latin Extended-D letters with a stroke, hook, bar, or other distinguishing mark
+	['Ꜧ', 'H'], // LATIN CAPITAL LETTER HENG
+	['ꜧ', 'h'], // LATIN SMALL LETTER HENG
+	['Ꜳ', 'Aa'], // LATIN CAPITAL LETTER AA
+	['ꜳ', 'aa'], // LATIN SMALL LETTER AA
+	['Ꜵ', 'Ao'], // LATIN CAPITAL LETTER AO
+	['ꜵ', 'ao'], // LATIN SMALL LETTER AO
+	['Ꜷ', 'Au'], // LATIN CAPITAL LETTER AU
+	['ꜷ', 'au'], // LATIN SMALL LETTER AU
+	['Ꜹ', 'Av'], // LATIN CAPITAL LETTER AV
+	['ꜹ', 'av'], // LATIN SMALL LETTER AV
+	['Ꜻ', 'Av'], // LATIN CAPITAL LETTER AV WITH HORIZONTAL BAR
+	['ꜻ', 'av'], // LATIN SMALL LETTER AV WITH HORIZONTAL BAR
+	['Ꜽ', 'Ay'], // LATIN CAPITAL LETTER AY
+	['ꜽ', 'ay'], // LATIN SMALL LETTER AY
+	['Ꝁ', 'K'], // LATIN CAPITAL LETTER K WITH STROKE
+	['ꝁ', 'k'], // LATIN SMALL LETTER K WITH STROKE
+	['Ꝃ', 'K'], // LATIN CAPITAL LETTER K WITH DIAGONAL STROKE
+	['ꝃ', 'k'], // LATIN SMALL LETTER K WITH DIAGONAL STROKE
+	['Ꝅ', 'K'], // LATIN CAPITAL LETTER K WITH STROKE AND DIAGONAL STROKE
+	['ꝅ', 'k'], // LATIN SMALL LETTER K WITH STROKE AND DIAGONAL STROKE
+	['Ꝉ', 'L'], // LATIN CAPITAL LETTER L WITH HIGH STROKE
+	['ꝉ', 'l'], // LATIN SMALL LETTER L WITH HIGH STROKE
+	['Ꝋ', 'O'], // LATIN CAPITAL LETTER O WITH LONG STROKE OVERLAY
+	['ꝋ', 'o'], // LATIN SMALL LETTER O WITH LONG STROKE OVERLAY
+	['Ꝏ', 'Oo'], // LATIN CAPITAL LETTER OO
+	['ꝏ', 'oo'], // LATIN SMALL LETTER OO
+	['Ꝑ', 'P'], // LATIN CAPITAL LETTER P WITH STROKE THROUGH DESCENDER
+	['ꝑ', 'p'], // LATIN SMALL LETTER P WITH STROKE THROUGH DESCENDER
+	['Ꝓ', 'P'], // LATIN CAPITAL LETTER P WITH FLOURISH
+	['ꝓ', 'p'], // LATIN SMALL LETTER P WITH FLOURISH
+	['Ꝕ', 'P'], // LATIN CAPITAL LETTER P WITH SQUIRREL TAIL
+	['ꝕ', 'p'], // LATIN SMALL LETTER P WITH SQUIRREL TAIL
+	['Ꝗ', 'Q'], // LATIN CAPITAL LETTER Q WITH STROKE THROUGH DESCENDER
+	['ꝗ', 'q'], // LATIN SMALL LETTER Q WITH STROKE THROUGH DESCENDER
+	['Ꝙ', 'Q'], // LATIN CAPITAL LETTER Q WITH DIAGONAL STROKE
+	['ꝙ', 'q'], // LATIN SMALL LETTER Q WITH DIAGONAL STROKE
+	['Ꝟ', 'V'], // LATIN CAPITAL LETTER V WITH DIAGONAL STROKE
+	['ꝟ', 'v'], // LATIN SMALL LETTER V WITH DIAGONAL STROKE
+	['Ꝡ', 'Vy'], // LATIN CAPITAL LETTER VY
+	['ꝡ', 'vy'], // LATIN SMALL LETTER VY
+	['Ꝩ', 'V'], // LATIN CAPITAL LETTER VEND
+	['ꝩ', 'v'], // LATIN SMALL LETTER VEND
+	['Ꝫ', 'Et'], // LATIN CAPITAL LETTER ET
+	['ꝫ', 'et'], // LATIN SMALL LETTER ET
+	['Ꝭ', 'Is'], // LATIN CAPITAL LETTER IS
+	['ꝭ', 'is'], // LATIN SMALL LETTER IS
+	['Ꝯ', 'Con'], // LATIN CAPITAL LETTER CON
+	['ꝯ', 'con'], // LATIN SMALL LETTER CON
+	['ꞎ', 'l'], // LATIN SMALL LETTER L WITH RETROFLEX HOOK AND BELT
+	['Ꞑ', 'N'], // LATIN CAPITAL LETTER N WITH DESCENDER
+	['ꞑ', 'n'], // LATIN SMALL LETTER N WITH DESCENDER
+	['Ꞓ', 'C'], // LATIN CAPITAL LETTER C WITH BAR
+	['ꞓ', 'c'], // LATIN SMALL LETTER C WITH BAR
+	['ꞔ', 'c'], // LATIN SMALL LETTER C WITH PALATAL HOOK
+	['ꞕ', 'h'], // LATIN SMALL LETTER H WITH PALATAL HOOK
+	['Ꞗ', 'B'], // LATIN CAPITAL LETTER B WITH FLOURISH
+	['ꞗ', 'b'], // LATIN SMALL LETTER B WITH FLOURISH
+	['Ꞙ', 'F'], // LATIN CAPITAL LETTER F WITH STROKE
+	['ꞙ', 'f'], // LATIN SMALL LETTER F WITH STROKE
+	['Ꞡ', 'G'], // LATIN CAPITAL LETTER G WITH OBLIQUE STROKE
+	['ꞡ', 'g'], // LATIN SMALL LETTER G WITH OBLIQUE STROKE
+	['Ꞣ', 'K'], // LATIN CAPITAL LETTER K WITH OBLIQUE STROKE
+	['ꞣ', 'k'], // LATIN SMALL LETTER K WITH OBLIQUE STROKE
+	['Ꞥ', 'N'], // LATIN CAPITAL LETTER N WITH OBLIQUE STROKE
+	['ꞥ', 'n'], // LATIN SMALL LETTER N WITH OBLIQUE STROKE
+	['Ꞧ', 'R'], // LATIN CAPITAL LETTER R WITH OBLIQUE STROKE
+	['ꞧ', 'r'], // LATIN SMALL LETTER R WITH OBLIQUE STROKE
+	['Ꞩ', 'S'], // LATIN CAPITAL LETTER S WITH OBLIQUE STROKE
+	['ꞩ', 's'], // LATIN SMALL LETTER S WITH OBLIQUE STROKE
+	['Ɦ', 'H'], // LATIN CAPITAL LETTER H WITH HOOK
+	['Ɬ', 'L'], // LATIN CAPITAL LETTER L WITH BELT
+	['Ʝ', 'J'], // LATIN CAPITAL LETTER J WITH CROSSED-TAIL
+	['Ꞹ', 'U'], // LATIN CAPITAL LETTER U WITH STROKE
+	['ꞹ', 'u'], // LATIN SMALL LETTER U WITH STROKE
+	['Ꞔ', 'C'], // LATIN CAPITAL LETTER C WITH PALATAL HOOK
+	['Ʂ', 'S'], // LATIN CAPITAL LETTER S WITH HOOK
+	['Ᶎ', 'Z'], // LATIN CAPITAL LETTER Z WITH PALATAL HOOK
+	['Ꟈ', 'D'], // LATIN CAPITAL LETTER D WITH SHORT STROKE OVERLAY
+	['ꟈ', 'd'], // LATIN SMALL LETTER D WITH SHORT STROKE OVERLAY
+	['Ꟊ', 'S'], // LATIN CAPITAL LETTER S WITH SHORT STROKE OVERLAY
+	['ꟊ', 's'], // LATIN SMALL LETTER S WITH SHORT STROKE OVERLAY
+	['Ꟍ', 'S'], // LATIN CAPITAL LETTER S WITH DIAGONAL STROKE
+	['ꟍ', 's'], // LATIN SMALL LETTER S WITH DIAGONAL STROKE
+	['꟱', 'S'], // Modifier letter capital S
+	['ꟲ', 'C'], // Modifier letter capital C
+	['ꟳ', 'F'], // Modifier letter capital F
+	['ꟴ', 'Q'], // Modifier letter capital Q
+	['Ꟶ', 'H'], // Reversed half H
+	['ꟶ', 'h'],
+	['ꟷ', 'I'], // Sideways I
+	['ꟸ', 'H'], // Modifier letter capital H with stroke
+	['ꟹ', 'oe'], // Modifier letter small ligature OE
+	['ꟺ', 'm'], // Small capital turned M
 
 	// Latin ligatures and digraphs
 	['ſ', 's'],
@@ -501,6 +792,30 @@ const replacements = [
 	['Я', 'Ya'],
 	['я', 'ya'],
 
+	// Church Slavonic letters
+	['Ѣ', 'E'], // Yat
+	['ѣ', 'e'],
+	['Ѳ', 'F'], // Fita
+	['ѳ', 'f'],
+	['Ѵ', 'I'], // Izhitsa
+	['ѵ', 'i'],
+	['Ѡ', 'O'], // Omega
+	['ѡ', 'o'],
+	['Ѻ', 'O'], // Round omega
+	['ѻ', 'o'],
+	['Ѯ', 'Ks'], // Ksi
+	['ѯ', 'ks'],
+	['Ѱ', 'Ps'], // Psi
+	['ѱ', 'ps'],
+	['Ѹ', 'U'], // Uk
+	['ѹ', 'u'],
+	['Ѥ', 'Ye'], // Iotified E
+	['ѥ', 'ye'],
+	['Ҁ', 'Q'], // Koppa
+	['ҁ', 'q'],
+	['Ѿ', 'Ot'], // Ot
+	['ѿ', 'ot'],
+
 	// Romanian
 	['ă', 'a'],
 	['Ă', 'A'],
@@ -778,6 +1093,7 @@ const replacements = [
 	['Ώ', 'O'],
 	['Ϊ', 'I'],
 	['Ϋ', 'Y'],
+	['Ϲ', 'S'],
 
 	// Disabled as it conflicts with German and Latin.
 	// Hungarian
@@ -2074,6 +2390,8 @@ const replacements = [
 	['₌', '='],
 	['₍', '('],
 	['₎', ')'],
+	// Superscript and subscript letters
+	...modifierLetterReplacements,
 	['𝟎', '0'],
 	['𝟏', '1'],
 	['𝟐', '2'],
