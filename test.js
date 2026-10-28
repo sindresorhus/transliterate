@@ -1,8 +1,10 @@
-/* eslint-disable node-test/no-conditional-assertion -- The assertion in the "all replacements are ASCII" test is table-driven: it must run once per entry in `replacements`. */
+/* eslint-disable node-test/no-conditional-assertion -- Assertions iterate over replacement tables and supported locales. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import process from 'node:process';
 import replacements from './replacements.js';
+import localeReplacements from './locale-replacements.js';
 import transliterate from './index.js';
 
 // Use CPU-time samples so host scheduling pauses do not dominate short benchmarks.
@@ -52,18 +54,6 @@ test('customReplacements that produce non-ASCII are transliterated', () => {
 
 	// Non-transliterable characters pass through (e.g., emoji)
 	assert.equal(transliterate('unicorn', {customReplacements: [['unicorn', '🦄']]}), '🦄');
-});
-
-test('all replacements are ASCII', () => {
-	const MAX_ASCII_CHARACTER_CODE = 127;
-
-	for (const [original, replacement] of replacements) {
-		if (replacement === '') {
-			continue;
-		}
-
-		assert.ok(replacement.codePointAt(0) <= MAX_ASCII_CHARACTER_CODE, `${original} → ${replacement} (code: ${replacement.codePointAt(0)})`);
-	}
 });
 
 test('supports German umlauts', () => {
@@ -153,6 +143,7 @@ test('supports Polish', () => {
 
 test('supports Serbian', () => {
 	assert.equal(transliterate('ђ џ Ђ Љ', {locale: 'sr'}), 'dj dz Dj Lj');
+	assert.equal(transliterate('Ђорђе Ћирић'), 'Djordje Ciric');
 });
 
 test('supports Slovak', () => {
@@ -179,6 +170,10 @@ test('normalizes various dash types to hyphen', () => {
 
 	// Combined test
 	assert.equal(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
+
+	// Custom replacements see the original dashes, and their output is normalized too
+	assert.equal(transliterate('1–2', {customReplacements: [['–', ' to ']]}), '1 to 2');
+	assert.equal(transliterate('x', {customReplacements: [['x', 'a—b']]}), 'a-b');
 });
 
 test('locale option for language-specific transliteration', () => {
@@ -249,21 +244,47 @@ test('Hungarian locale support', () => {
 test('Bulgarian locale support - Issue #43', () => {
 	assert.equal(transliterate('Щастие Хляб Ъгъл Кольо', {locale: 'bg'}), 'Shtastie Hlyab Agal Kolyo');
 	assert.equal(transliterate('Пещера Хасково', {locale: 'bg-BG'}), 'Peshtera Haskovo');
+	assert.equal(transliterate('Дадох ѝ книгата', {locale: 'bg'}), 'Dadoh i knigata');
 
 	// Word-final ия is ia
 	assert.equal(transliterate('София, Мария-Антоанета', {locale: 'bg'}), 'Sofia, Maria-Antoaneta');
+	assert.equal(transliterate('Ия, Ияна, ИЯ, ия, Илиян', {locale: 'bg'}), 'Ia, Iyana, IA, ia, Iliyan');
 
 	// The country name is an exception
 	assert.equal(transliterate('Република България', {locale: 'bg'}), 'Republika Bulgaria');
 	assert.equal(transliterate('БЪЛГАРИЯ българия', {locale: 'bg'}), 'BULGARIA bulgaria');
 	assert.equal(transliterate('Български ВЕЛИКОБЪЛГАРИЯ', {locale: 'bg'}), 'Balgarski VELIKOBALGARIA');
-	assert.equal(transliterate('Ияна Илиян', {locale: 'bg'}), 'Iyana Iliyan');
 	assert.equal(transliterate('София'), 'Sofiya');
+});
+
+test('Bulgarian alphabet follows the Streamlined System', () => {
+	const alphabet = 'абвгдежзийклмнопрстуфхцчшщъьюя';
+	assert.equal(transliterate(alphabet, {locale: 'bg'}), 'abvgdezhziyklmnoprstufhtschshshtayyuya');
+	assert.equal(transliterate(alphabet.toUpperCase(), {locale: 'bg'}), 'ABVGDEZhZIYKLMNOPRSTUFHTsChShShtAYYuYa');
+});
+
+test('Bulgarian hard sign is not consumed by the Russian digraph', () => {
+	assert.equal(transliterate('съединение Съединение СЪЕДИНЕНИЕ', {locale: 'bg'}), 'saedinenie Saedinenie SAEDINENIE');
+	assert.equal(transliterate('ъе Ъе ъЕ ЪЕ', {locale: 'bg-BG'}), 'ae Ae aE AE');
+	assert.equal(transliterate('подъезд'), 'podyezd');
+	assert.equal(transliterate('съезд'), 'syezd');
+});
+
+test('Bulgarian context respects word boundaries and custom replacements', () => {
+	assert.equal(transliterate('България-България (България)! Българията прабългария', {locale: 'bg'}), 'Bulgaria-Bulgaria (Bulgaria)! Balgariyata prabalgaria');
+	assert.equal(transliterate('Софиянски Ияна', {locale: 'bg'}), 'Sofiyanski Iyana');
+
+	// A combining mark belongs to the letter before it
+	assert.equal(transliterate('Велико\u{301}българия', {locale: 'bg'}), 'Velikobalgaria');
+	assert.equal(transliterate('Мария\u{301} България\u{301}', {locale: 'bg'}), 'Maria Bulgaria');
+	assert.equal(transliterate('Ия\u{301}на България\u{301}ната', {locale: 'bg'}), 'Iyana Balgariyanata');
+	assert.equal(transliterate('България', {locale: 'bg', customReplacements: [['България', '🦄']]}), '🦄');
+	assert.equal(transliterate('x', {locale: 'bg', customReplacements: [['x', 'България']]}), 'Bulgaria');
 });
 
 test('Serbian locale support', () => {
 	assert.equal(transliterate('Ђоко џудиста', {locale: 'sr'}), 'Djoko dzudista');
-	assert.equal(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njikhova');
+	assert.equal(transliterate('љубав њихова', {locale: 'sr'}), 'ljubav njihova');
 });
 
 test('Azerbaijani ə and Ə support - Issue #33', () => {
@@ -283,36 +304,21 @@ test('French œ ligature support - Issue #7', () => {
 	assert.equal(transliterate('cœur'), 'coeur');
 });
 
-test('detects overlapping replacements not handled by locales', () => {
-	// This test helps identify character conflicts that might need locale-specific handling
-	const conflicts = [];
-	const charMap = new Map();
+test('longer built-in keys take precedence over neighboring single characters', () => {
+	// Overlapping replacement keys must preserve multi-character mappings.
+	assert.equal(transliterate('ъе Ъе ъЕ ЪЕ ый Ый ЫЙ ыЙ'), 'ye Ye yE YE iy Iy IY iY');
 
-	// Check global replacements for duplicates
-	for (const [char, replacement] of replacements) {
-		if (charMap.has(char)) {
-			const existing = charMap.get(char);
-			if (existing !== replacement) {
-				conflicts.push({
-					char,
-					replacements: [existing, replacement],
-				});
-			}
-		} else {
-			charMap.set(char, replacement);
-		}
-	}
+	// Check Armenian digraphs alongside their individual letters.
+	assert.equal(transliterate('ուո ՈՒՈ ՈւՈ'), 'uvo UVo UVo');
 
-	// Log conflicts for awareness
-	if (conflicts.length > 0) {
-		console.log(`Found ${conflicts.length} character conflicts in replacements:`);
-		for (const c of conflicts) {
-			console.log(`  '${c.char}': [${c.replacements.join(', ')}]`);
-		}
-	}
+	// Check emoji sequences that contain variation selectors.
+	assert.equal(transliterate('#️⃣*️⃣0️⃣🅰️🅱️🅾️'), '#*0ABO');
 
-	// The test passes if there are no conflicts
-	assert.equal(conflicts.length, 0, `Found ${conflicts.length} character conflicts in replacements`);
+	// Include neighboring characters to expose partial matches.
+	assert.equal(transliterate('воуուа'), 'vouua');
+
+	// The locale must preserve its own overlapping replacement rules.
+	assert.equal(transliterate('съединение', {locale: 'bg'}), 'saedinenie');
 });
 
 test('performance scales linearly (no ReDoS)', () => {
@@ -375,26 +381,269 @@ test('options do not cause performance regression', () => {
 	assert.ok(combinedTime / baseTime < 5, `locale + customReplacements is ${(combinedTime / baseTime).toFixed(1)}x slower than default`);
 });
 
-test('Bulgarian hard sign is not consumed by the Russian digraph', () => {
-	assert.equal(transliterate('съединение Съединение СЪЕДИНЕНИЕ', {locale: 'bg'}), 'saedinenie Saedinenie SAEDINENIE');
-	assert.equal(transliterate('ъе Ъе ъЕ ЪЕ', {locale: 'bg-BG'}), 'ae Ae aE AE');
-	assert.equal(transliterate('подъезд'), 'podyezd');
-	assert.equal(transliterate('съезд'), 'syezd');
+test('mathematical script capital G preserves case', () => {
+	assert.equal(transliterate('𝒜𝒢𝒩𝒟 𝓰𝓖 𝒢'), 'AGND gG G');
+	assert.equal(transliterate('𝒢', {locale: 'sv'}), 'G');
+	assert.equal(transliterate('𝒢', {customReplacements: [['𝒢', 'custom']]}), 'custom');
 });
 
-test('title-cased Bulgarian final iya uses ia', () => {
-	assert.equal(transliterate('Ия, Ияна, ИЯ, ия', {locale: 'bg'}), 'Ia, Iyana, IA, ia');
+test('mathematical dotless i is not an l', () => {
+	assert.equal(transliterate('𝚤𝚥 𝚒𝚓 ıi'), 'ij ij ii');
+	assert.equal(transliterate('𝚤 + 𝚤'), 'i + i');
+	assert.equal(transliterate('𝚤', {locale: 'tr'}), 'i');
 });
 
-test('Bulgarian alphabet follows the Streamlined System', () => {
-	const alphabet = 'абвгдежзийклмнопрстуфхцчшщъьюя';
-	assert.equal(transliterate(alphabet, {locale: 'bg'}), 'abvgdezhziyklmnoprstufhtschshshtayyuya');
-	assert.equal(transliterate(alphabet.toUpperCase(), {locale: 'bg'}), 'ABVGDEZhZIYKLMNOPRSTUFHTsChShShtAYYuYa');
+test('mathematical Greek alphabets are complete and consistent across styles', () => {
+	// Bold, italic, bold italic, sans-serif bold, and sans-serif bold italic are consecutive blocks of 58 characters.
+	const alphabet = start => Array.from({length: 58}, (_, index) => String.fromCodePoint(start + index)).join('');
+	for (let style = 0; style < 5; style++) {
+		const characters = alphabet(0x1_D6_A8 + (style * 58));
+		assert.equal(transliterate(characters), 'ABGDEZITHIKLMNKSOPRTHSTYFXPSODavgdezithiklmnksoprsstyfxpsodethkfrp', characters);
+	}
 });
 
-test('Bulgarian context respects word boundaries and custom replacements', () => {
-	assert.equal(transliterate('България-България (България)! Българията прабългария', {locale: 'bg'}), 'Bulgaria-Bulgaria (Bulgaria)! Balgariyata prabalgaria');
-	assert.equal(transliterate('Софиянски Ияна', {locale: 'bg'}), 'Sofiyanski Iyana');
-	assert.equal(transliterate('България', {locale: 'bg', customReplacements: [['България', '🦄']]}), '🦄');
-	assert.equal(transliterate('x', {locale: 'bg', customReplacements: [['x', 'България']]}), 'Bulgaria');
+test('all configured replacement strings are entirely ASCII and are reachable', () => {
+	for (const [original, replacement] of replacements) {
+		assert.match(replacement, /^\p{ASCII}*$/v, original);
+		assert.equal(transliterate(original), replacement, original);
+	}
+});
+
+test('rejects non-string input without coercion', () => {
+	for (const value of [undefined, null, false, 42, 42n, Symbol('text'), {}, [], new Object('text')]) {
+		assert.throws(() => transliterate(value), TypeError);
+	}
+});
+
+test('options and their properties are optional', () => {
+	for (const options of [undefined, null, {}, {customReplacements: undefined, locale: undefined}]) {
+		assert.equal(transliterate('ä', options), 'ae');
+	}
+});
+
+test('locale tags are case insensitive and use the language prefix', () => {
+	assert.equal(transliterate('äöå', {locale: 'SV-se-u-co-standard'}), 'aoa');
+	assert.equal(transliterate('æøå', {locale: 'NO-no'}), 'aeoeaa');
+	assert.equal(transliterate('æøå', {locale: 'NB-no'}), 'aeoeaa');
+	assert.equal(transliterate('öü', {locale: 'TR-tr'}), 'ou');
+	for (const locale of ['', 'unknown', '__proto__', 'constructor', 'toString']) {
+		assert.equal(transliterate('äöü', {locale}), 'aeoeue');
+	}
+});
+
+test('custom replacement keys are literal strings', () => {
+	const keys = ['$', '(', ')', '*', '+', '.', '?', '[', '\\', ']', '^', '{', '|', '}', '/', '-'];
+	for (const key of keys) {
+		assert.equal(transliterate(`a${key}b${key}`, {customReplacements: [[key, 'x']]}), 'axbx', key);
+	}
+
+	assert.equal(transliterate('🦄🦄', {customReplacements: [['🦄', 'unicorn']]}), 'unicornunicorn');
+});
+
+test('custom replacements match longer keys first without mutating caller data', () => {
+	const customReplacements = Object.freeze([
+		Object.freeze(['a', 'x']),
+		Object.freeze(['ab', 'y']),
+		Object.freeze(['abc', 'z']),
+	]);
+	assert.equal(transliterate('abc ab a', {customReplacements}), 'z y x');
+	assert.deepEqual(customReplacements, [['a', 'x'], ['ab', 'y'], ['abc', 'z']]);
+
+	const replacementMap = new Map(customReplacements);
+	assert.equal(transliterate('abc ab a', {customReplacements: replacementMap}), 'z y x');
+	assert.deepEqual([...replacementMap], customReplacements);
+});
+
+test('repeated calls do not leak locale or custom replacement state', () => {
+	for (let index = 0; index < 3; index++) {
+		assert.equal(transliterate('ö', {locale: 'sv'}), 'o');
+		assert.equal(transliterate('ö', {customReplacements: [['ö', 'custom']]}), 'custom');
+		assert.equal(transliterate('ö'), 'oe');
+		assert.equal(transliterate('ö', {locale: 'de'}), 'oe');
+	}
+});
+
+test('unsupported scripts and emoji are preserved', () => {
+	assert.equal(transliterate('中文 🦄 🐈 café'), '中文 🦄 🐈 cafe');
+
+	// Diacritic stripping must not break joiners, skin tones, variation selectors, or flags
+	assert.equal(transliterate('👨‍👩‍👧 👍🏽 ❤️ 🇳🇴 🏳️‍🌈'), '👨‍👩‍👧 👍🏽 ❤️ 🇳🇴 🏳️‍🌈');
+});
+
+test('lone surrogates are preserved', () => {
+	assert.equal(transliterate('\u{D800}ä\u{DFFF}'), '\u{D800}ae\u{DFFF}');
+	assert.equal(transliterate('\u{DC00}България', {locale: 'bg'}), '\u{DC00}Bulgaria');
+});
+
+test('circled Latin alphabets have no missing M', () => {
+	const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	const lowercase = uppercase.toLowerCase();
+	const circledUppercase = Array.from({length: 26}, (_, index) => String.fromCodePoint(0x24_B6 + index)).join('');
+	const circledLowercase = Array.from({length: 26}, (_, index) => String.fromCodePoint(0x24_D0 + index)).join('');
+	assert.equal(transliterate(circledUppercase), [...uppercase].map(letter => `(${letter})`).join(''));
+	assert.equal(transliterate(circledLowercase), [...lowercase].map(letter => `(${letter})`).join(''));
+	assert.equal(transliterate('ⓁⓂⓃ'), '(L)(M)(N)');
+});
+
+test('Arabic short vowels do not require direction marks', () => {
+	assert.equal(transliterate('بَ بِ بُ'), 'ba bi bu');
+	assert.equal(transliterate('كَتَبَ كِتَاب'), 'kataba kitaab');
+	assert.equal(transliterate('َ ِ ُ'), 'a i u');
+	assert.equal(transliterate('بَ\u{200E} بِ\u{200E}'), 'ba\u{200E} bi\u{200E}');
+});
+
+test('Pashto tteh is a t rather than a p', () => {
+	assert.equal(transliterate('ټ بټ ټاټ'), 't bt tat');
+	assert.equal(transliterate('ټ پ ت ٹ'), 't p t t');
+	assert.equal(transliterate('ټ', {customReplacements: [['ټ', 'T']]}), 'T');
+});
+
+test('Arabic presentation dhal matches its base letter', () => {
+	assert.equal(transliterate('ﺫ ذ'), 'dh dh');
+	assert.equal(transliterate('ﺫﺭﺯ'), 'dhrz');
+	assert.equal(transliterate('ﺫ', {locale: 'tr'}), 'dh');
+});
+
+test('Vietnamese dong sign retains its d identity', () => {
+	assert.equal(transliterate('100₫ ₫100 đ'), '100d d100 d');
+	assert.equal(transliterate('₫₫'), 'dd');
+	assert.equal(transliterate('₫', {customReplacements: [['₫', 'VND']]}), 'VND');
+});
+
+test('Macedonian alphabet does not leave Cyrillic letters behind', () => {
+	assert.equal(transliterate('Ѓорѓи Ѕвезда Македонија Џем'), 'Gjorgji Dzvezda Makedonija Dzem');
+	assert.equal(transliterate('Ѓѓ Ѕѕ Јј Џџ'), 'Gjgj Dzdz Jj Dzdz');
+	assert.equal(transliterate('АБВГДЃЕЖЗЅИЈКЛЉМНЊОПРСТЌУФХЦЧЏШ'), 'ABVGDGjEZhZDzIJKLLjMNNjOPRSTKjUFKhTsChDzSh');
+	assert.equal(transliterate('Јован језик', {locale: 'sr'}), 'Jovan jezik');
+});
+
+test('Serbian h does not use the Russian kh transliteration', () => {
+	assert.equal(transliterate('Хвала храна њихова', {locale: 'sr'}), 'Hvala hrana njihova');
+	assert.equal(transliterate('Хх', {locale: 'sr-Cyrl-RS'}), 'Hh');
+	assert.equal(transliterate('Хх'), 'Khkh');
+});
+
+test('Serbian Latin and Cyrillic d with stroke agree', () => {
+	assert.equal(transliterate('Đorđe', {locale: 'sr-Latn'}), 'Djordje');
+	assert.equal(transliterate('Ђорђе', {locale: 'sr-Cyrl'}), 'Djordje');
+	assert.equal(transliterate('Đđ', {locale: 'SR-latn-RS'}), 'Djdj');
+	assert.equal(transliterate('Đđ'), 'Dd');
+});
+
+test('custom replacements match canonically equivalent text and normalize their output', () => {
+	assert.equal(transliterate('e\u{301}', {customReplacements: [['e\u{301}', 'matched']]}), 'matched');
+	assert.equal(transliterate('a\u{308}', {customReplacements: new Map([['a\u{308}', 'matched']])}), 'matched');
+	assert.equal(transliterate('Ka\u{308}se', {customReplacements: [['ä', 'AE']]}), 'KAEse');
+	assert.equal(transliterate('Käse', {customReplacements: [['a\u{308}', 'AE']]}), 'KAEse');
+	assert.equal(transliterate('éx', {customReplacements: [['e\u{301}', 'E'], ['éx', 'matched']]}), 'matched');
+	assert.equal(transliterate('x', {customReplacements: [['x', 'o\u{308}']]}), 'oe');
+	assert.equal(transliterate('x', {customReplacements: [['x', 'o\u{308}']], locale: 'sv'}), 'o');
+	assert.equal(transliterate('x', {customReplacements: [['x', 'И\u{306}е\u{308}']]}), 'Yyo');
+});
+
+test('accented Greek and Cyrillic bases are transliterated after stripping diacritics', () => {
+	assert.equal(transliterate('Ἀθήνα ᾠδή Ἑλλάς'), 'Athina odi Ellas');
+	assert.equal(transliterate('тѐст Ѝ ѝ Ѐ ѐ Ӓ ӓ'), 'test I i E e A a');
+	assert.equal(transliterate('ἁἂἃἄἅἆἇ ἉἊἋἌἍἎἏ'), 'aaaaaaa AAAAAAA');
+	assert.equal(transliterate('Ἀθήνα'.normalize('NFD')), 'Athina');
+	assert.equal(transliterate('Й й Ё ё Ї ї'), 'Y y Yo yo Yi yi');
+	assert.equal(transliterate('Ѓѓ Ќќ'), 'Gjgj Kjkj');
+	assert.equal(transliterate('äöü', {locale: 'de'}), 'aeoeue');
+	assert.equal(transliterate('äöü', {locale: 'sv'}), 'aoue');
+	assert.equal(transliterate('Ἀθήνα', {customReplacements: [['Ἀ', 'custom']]}), 'customthina');
+});
+
+test('negated mathematical relations keep their negation', () => {
+	// The negation stroke is not an accent, so removing diacritics must not turn `≠` into `=`
+	assert.equal(transliterate('a ≠ b'), 'a ≠ b');
+	assert.equal(transliterate('x ∉ A'), 'x ∉ A');
+	assert.equal(transliterate('p ≮ q ≯ r'), 'p ≮ q ≯ r');
+	assert.equal(transliterate('a\u{338}b'), 'a\u{338}b');
+});
+
+test('ASCII diacritics remain literal punctuation in mixed text', () => {
+	assert.equal(transliterate('2^3 = 8; `const x = 1;`'), '2^3 = 8; `const x = 1;`');
+	assert.equal(transliterate('café^ déjà `vu`'), 'cafe^ deja `vu`');
+	assert.equal(transliterate('x', {customReplacements: [['x', '^`é']]}), '^`e');
+	assert.equal(transliterate('a\u{301}\u{300}\u{308}'), 'a');
+	assert.equal(transliterate('´¨'), '');
+});
+
+test('all locale replacement rules are reachable and entirely ASCII', () => {
+	for (const [locale, localeMap] of Object.entries(localeReplacements)) {
+		for (const [original, replacement] of localeMap) {
+			assert.match(replacement, /^\p{ASCII}*$/v, `${locale}: ${original}`);
+			assert.equal(transliterate(original, {locale}), replacement, `${locale}: ${original}`);
+		}
+	}
+});
+
+test('characters with locale rules are also transliterated without a locale', () => {
+	for (const [locale, localeMap] of Object.entries(localeReplacements)) {
+		for (const original of localeMap.keys()) {
+			assert.match(transliterate(original), /^\p{ASCII}*$/v, `${locale}: ${original}`);
+		}
+	}
+});
+
+test('readme lists every supported locale', () => {
+	const readme = fs.readFileSync(new URL('readme.md', import.meta.url), 'utf8');
+	const {section} = readme.match(/### Supported locales\n(?<section>.*?)\n## /sv).groups;
+	const documentedLocales = section.matchAll(/^- `(?<locale>[^`]+)`/gmv).map(match => match.groups.locale);
+	assert.deepEqual(new Set(documentedLocales), new Set(Object.keys(localeReplacements)));
+});
+
+test('documented usage examples produce their documented output', () => {
+	assert.equal(transliterate('Fußgängerübergänge'), 'Fussgaengeruebergaenge');
+	assert.equal(transliterate('Я люблю единорогов'), 'Ya lyublyu edinorogov');
+	assert.equal(transliterate('أنا أحب حيدات'), 'ana ahb hydat');
+	assert.equal(transliterate('tôi yêu những chú kỳ lân'), 'toi yeu nhung chu ky lan');
+	assert.equal(transliterate('En–dashes and em—dashes are normalized'), 'En-dashes and em-dashes are normalized');
+});
+
+test('canonically equivalent input has the same default and locale output', () => {
+	const examples = [
+		['Fußgängerübergänge', 'de'],
+		['Räksmörgås', 'sv'],
+		['Blåbærsyltetøj', 'da'],
+		['Ёлка Йога', 'unknown'],
+		['Ѓорѓи Ќе', 'unknown'],
+		['Ἀθήνα ΐ', 'unknown'],
+		['ố Ừ Đ', 'unknown'],
+		['Й Ѝ Ї', 'bg'],
+	];
+	for (const [input, locale] of examples) {
+		assert.equal(transliterate(input.normalize('NFD')), transliterate(input));
+		assert.equal(transliterate(input.normalize('NFD'), {locale}), transliterate(input, {locale}));
+	}
+});
+
+test('ASCII including punctuation and control characters passes through in every locale', () => {
+	const ascii = Array.from({length: 128}, (_, index) => String.fromCodePoint(index)).join('');
+	for (const locale of [undefined, ...Object.keys(localeReplacements)]) {
+		assert.equal(transliterate(ascii, {locale}), ascii, locale);
+		assert.equal(transliterate('', {locale}), '', locale);
+	}
+});
+
+test('configured mathematical alphabets agree with their Unicode base characters', () => {
+	for (const character of replacements.keys()) {
+		const codePoint = character.codePointAt(0);
+		if (codePoint < 0x1_D4_00 || codePoint > 0x1_D7_FF) {
+			continue;
+		}
+
+		const base = character.normalize('NFKC');
+		if (base === character || !(replacements.has(base) || /^[0-9A-Za-z]$/v.test(base))) {
+			continue;
+		}
+
+		assert.equal(transliterate(character), transliterate(base), character);
+	}
+});
+
+test('custom replacements preserve sequential replacement and JavaScript substitutions', () => {
+	assert.equal(transliterate('a', {customReplacements: [['a', 'b'], ['b', 'c']]}), 'c');
+	assert.equal(transliterate('x', {customReplacements: [['x', '$$$&$1']]}), '$x$1');
+	assert.equal(transliterate('xx', {customReplacements: [['x', '[$&]']]}), '[x][x]');
 });

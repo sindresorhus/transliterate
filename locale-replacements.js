@@ -96,8 +96,12 @@ const localeReplacements = {
 
 	// Serbian
 	sr: [
+		['х', 'h'],
+		['Х', 'H'],
 		['ђ', 'dj'],
 		['Ђ', 'Dj'],
+		['đ', 'dj'],
+		['Đ', 'Dj'],
 		['џ', 'dz'],
 		['Џ', 'Dz'],
 		['љ', 'lj'],
@@ -125,19 +129,20 @@ export default localeReplacements;
 /**
 Language-specific replacements that depend on the surrounding text.
 
-Values are arrays of [pattern, replacement] pairs. They are applied before the other replacements.
+Values are arrays of [pattern, replacement] pairs. They are applied after the custom replacements and before the other replacements.
 */
 export const localeContextReplacements = {
 	// Bulgarian
+	// A combining mark belongs to the letter before it, so marks are skipped when checking the end of a word.
 	bg: [
 		// The country name is a fixed exception (България → Bulgaria, not Balgaria)
-		[/(?<![\p{Letter}\p{Mark}])България(?![\p{Letter}\p{Mark}])/gv, 'Bulgaria'],
-		[/(?<![\p{Letter}\p{Mark}])БЪЛГАРИЯ(?![\p{Letter}\p{Mark}])/gv, 'BULGARIA'],
-		[/(?<![\p{Letter}\p{Mark}])българия(?![\p{Letter}\p{Mark}])/gv, 'bulgaria'],
+		[/(?<![\p{Letter}\p{Mark}])България(?!\p{Mark}*\p{Letter})/gv, 'Bulgaria'],
+		[/(?<![\p{Letter}\p{Mark}])БЪЛГАРИЯ(?!\p{Mark}*\p{Letter})/gv, 'BULGARIA'],
+		[/(?<![\p{Letter}\p{Mark}])българия(?!\p{Mark}*\p{Letter})/gv, 'bulgaria'],
 
 		// Word-final ия is ia (София → Sofia)
-		[/ия(?![\p{Letter}\p{Mark}])/gv, 'ia'],
-		[/Ия(?![\p{Letter}\p{Mark}])/gv, 'Ia'],
-		[/ИЯ(?![\p{Letter}\p{Mark}])/gv, 'IA'],
+		[/ия(?!\p{Mark}*\p{Letter})/gv, 'ia'],
+		[/Ия(?!\p{Mark}*\p{Letter})/gv, 'Ia'],
+		[/ИЯ(?!\p{Mark}*\p{Letter})/gv, 'IA'],
 	],
 };

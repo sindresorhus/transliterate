@@ -2,7 +2,7 @@ export type Options = {
 	/**
 	Add your own custom replacements.
 
-	The replacements are run on the original string before any other transformations.
+	The replacements are run on the original string before any other transformations. Both the string and the keys are normalized to NFC first, so a key matches canonically equivalent text.
 
 	This only overrides a default replacement if you set an item with the same key.
 
