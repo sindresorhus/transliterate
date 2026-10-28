@@ -715,6 +715,69 @@ const replacements = [
 	['َ', 'a'],
 	['ُ', 'u'],
 	['ِ', 'i'],
+	// Tanween marks carry the case ending vowel plus `n`
+	['ًا', 'an'], // Fathatan sits on a silent alef, which must not add a vowel of its own
+	['اً', 'an'], // The fathatan may also follow the silent alef
+	['ً', 'an'],
+	['ٌ', 'un'],
+	['ٍ', 'in'],
+	['ٰ', 'a'], // Superscript alef, which marks a long `a`
+	['َٰ', 'a'], // A fatha with a superscript alef is one long `a`, not two vowels
+
+	// Vowel and recitation marks that Unicode does not classify as diacritics, so the strip would leave them in the output
+	['ؐ', ''], // ARABIC SIGN SALLALLAHOU ALAYHE WASSALLAM
+	['ؑ', ''], // ARABIC SIGN ALAYHE ASSALLAM
+	['ؒ', ''], // ARABIC SIGN RAHMATULLAH ALAYHE
+	['ؓ', ''], // ARABIC SIGN RADI ALLAHOU ANHU
+	['ؔ', ''], // ARABIC SIGN TAKHALLUS
+	['ؕ', ''], // ARABIC SMALL HIGH TAH
+	['ؖ', ''], // ARABIC SMALL HIGH LIGATURE ALEF WITH LAM WITH YEH
+	['ؗ', ''], // ARABIC SMALL HIGH ZAIN
+	['ؘ', 'a'], // ARABIC SMALL FATHA
+	['ؙ', 'u'], // ARABIC SMALL DAMMA
+	['ؚ', 'i'], // ARABIC SMALL KASRA
+	['ٓ', ''], // ARABIC MADDAH ABOVE
+	['ٔ', ''], // ARABIC HAMZA ABOVE
+	['ٕ', ''], // ARABIC HAMZA BELOW
+	['ٖ', ''], // ARABIC SUBSCRIPT ALEF
+	['ٙ', ''], // ARABIC ZWARAKAY
+	['ٚ', ''], // ARABIC VOWEL SIGN SMALL V ABOVE
+	['ٛ', ''], // ARABIC VOWEL SIGN INVERTED SMALL V ABOVE
+	['ٜ', ''], // ARABIC VOWEL SIGN DOT BELOW
+	['ٝ', 'u'], // ARABIC REVERSED DAMMA
+	['ٞ', 'a'], // ARABIC FATHA WITH TWO DOTS
+	['ٟ', ''], // ARABIC WAVY HAMZA BELOW
+	['ۖ', ''], // ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA
+	['ۗ', ''], // ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA
+	['ۘ', ''], // ARABIC SMALL HIGH MEEM INITIAL FORM
+	['ۙ', ''], // ARABIC SMALL HIGH LAM ALEF
+	['ۚ', ''], // ARABIC SMALL HIGH JEEM
+	['ۛ', ''], // ARABIC SMALL HIGH THREE DOTS
+	['ۜ', ''], // ARABIC SMALL HIGH SEEN
+	['ۡ', ''], // ARABIC SMALL HIGH DOTLESS HEAD OF KHAH
+	['ۢ', ''], // ARABIC SMALL HIGH MEEM ISOLATED FORM
+	['ۣ', ''], // ARABIC SMALL LOW SEEN
+	['ۤ', ''], // ARABIC SMALL HIGH MADDA
+	['ۧ', ''], // ARABIC SMALL HIGH YEH
+	['ۨ', ''], // ARABIC SMALL HIGH NOON
+	['ۭ', ''], // ARABIC SMALL LOW MEEM
+	['ࢗ', 'e'], // ARABIC PEPET
+	['࣓', ''], // ARABIC SMALL LOW WAW
+	['ࣔ', ''], // ARABIC SMALL HIGH WORD AR-RUB
+	['ࣕ', ''], // ARABIC SMALL HIGH SAD
+	['ࣖ', ''], // ARABIC SMALL HIGH AIN
+	['ࣗ', ''], // ARABIC SMALL HIGH QAF
+	['ࣘ', ''], // ARABIC SMALL HIGH NOON WITH KASRA
+	['ࣙ', ''], // ARABIC SMALL LOW NOON WITH KASRA
+	['ࣚ', ''], // ARABIC SMALL HIGH WORD ATH-THALATHA
+	['ࣛ', ''], // ARABIC SMALL HIGH WORD AS-SAJDA
+	['ࣜ', ''], // ARABIC SMALL HIGH WORD AN-NISF
+	['ࣝ', ''], // ARABIC SMALL HIGH WORD SAKTA
+	['ࣞ', ''], // ARABIC SMALL HIGH WORD QIF
+	['ࣟ', ''], // ARABIC SMALL HIGH WORD WAQFA
+	['࣠', ''], // ARABIC SMALL HIGH FOOTNOTE MARKER
+	['࣡', ''], // ARABIC SMALL HIGH SIGN SAFHA
+	['ࣿ', ''], // ARABIC MARK SIDEWAYS NOON GHUNNA
 	['٠', '0'],
 	['١', '1'],
 	['٢', '2'],
@@ -725,6 +788,35 @@ const replacements = [
 	['٧', '7'],
 	['٨', '8'],
 	['٩', '9'],
+	// Punctuation and separators
+	['،', ','], // Arabic comma
+	['؛', ';'], // Arabic semicolon
+	['؟', '?'], // Arabic question mark
+	['٪', '%'], // Arabic percent sign
+	['٫', '.'], // Arabic decimal separator
+	['٬', ','], // Arabic thousands separator
+	['٭', '*'], // Arabic five pointed star
+	['۔', '.'], // Urdu full stop
+	['؍', '/'], // Arabic date separator
+	['؞', '.'], // Arabic triple dot punctuation mark
+	['﴾', '('], // Ornate left parenthesis
+	['﴿', ')'], // Ornate right parenthesis
+	// Letters used by Persian, Urdu, Kurdish, Uyghur, Kazakh, and Sindhi
+	['ٱ', 'a'], // Alef wasla
+	['ۂ', 'h'],
+	['ۃ', 't'],
+	['ۓ', 'y'],
+	['ۇ', 'u'],
+	['ۈ', 'u'],
+	['ۊ', 'u'],
+	['ۆ', 'o'],
+	['ۅ', 'o'],
+	['ۋ', 'v'],
+	['ۏ', 'v'],
+	['ە', 'e'],
+	['ڭ', 'ng'],
+	['ڴ', 'ng'],
+	['ڻ', 'n'],
 
 	// Persian / Farsi
 	['چ', 'ch'],
@@ -749,10 +841,7 @@ const replacements = [
 	['ځ', 'z'],
 	['څ', 'c'],
 	['ډ', 'd'],
-	['ﺫ', 'dh'],
-	['ﺭ', 'r'],
 	['ړ', 'r'],
-	['ﺯ', 'z'],
 	['ږ', 'g'],
 	['ښ', 'x'],
 	['ګ', 'g'],
@@ -769,6 +858,188 @@ const replacements = [
 	['ہ', 'h'],
 	['ھ', 'h'],
 	['ے', 'e'],
+
+	// Kurdish
+	['ڤ', 'v'],
+	['ڕ', 'r'],
+	['ڵ', 'l'],
+	['ێ', 'e'],
+
+	// Sindhi
+	['ٺ', 'th'], // Tteheh, an aspirated retroflex `t`
+	['ٻ', 'b'], // Beeh, an implosive `b`
+	['ٽ', 't'],
+	['ٿ', 'th'],
+	['ڀ', 'bh'],
+	['ڃ', 'n'],
+	['ڄ', 'j'],
+	['ڇ', 'ch'],
+	['ڊ', 'd'],
+	['ڋ', 'd'],
+	['ڌ', 'dh'],
+	['ڍ', 'dh'],
+	['ڎ', 'd'],
+	['ڏ', 'd'],
+	['ڐ', 'd'],
+	['ڙ', 'r'],
+	['ڳ', 'g'],
+	['ڱ', 'ng'],
+	['ڪ', 'k'],
+	['ڦ', 'ph'],
+
+	// Dotless and wavy hamza forms used in Quranic and early Arabic text
+	['ٮ', 'b'],
+	['ٯ', 'q'],
+	['ٲ', 'a'],
+	['ٳ', 'a'],
+	['ٴ', '\''],
+	['ٵ', 'a'],
+	['ٶ', 'w'],
+	['ٷ', 'u'],
+	['ٸ', 'y'],
+
+	// Arabic mathematical letters, which are styled variants of the letters above
+	['𞸀', 'a'], // ARABIC MATHEMATICAL ALEF
+	['𞸁', 'b'], // ARABIC MATHEMATICAL BEH
+	['𞸂', 'j'], // ARABIC MATHEMATICAL JEEM
+	['𞸃', 'd'], // ARABIC MATHEMATICAL DAL
+	['𞸅', 'w'], // ARABIC MATHEMATICAL WAW
+	['𞸆', 'z'], // ARABIC MATHEMATICAL ZAIN
+	['𞸇', 'h'], // ARABIC MATHEMATICAL HAH
+	['𞸈', 't'], // ARABIC MATHEMATICAL TAH
+	['𞸉', 'y'], // ARABIC MATHEMATICAL YEH
+	['𞸊', 'k'], // ARABIC MATHEMATICAL KAF
+	['𞸋', 'l'], // ARABIC MATHEMATICAL LAM
+	['𞸌', 'm'], // ARABIC MATHEMATICAL MEEM
+	['𞸍', 'n'], // ARABIC MATHEMATICAL NOON
+	['𞸎', 's'], // ARABIC MATHEMATICAL SEEN
+	['𞸏', 'e'], // ARABIC MATHEMATICAL AIN
+	['𞸐', 'f'], // ARABIC MATHEMATICAL FEH
+	['𞸑', 's'], // ARABIC MATHEMATICAL SAD
+	['𞸒', 'q'], // ARABIC MATHEMATICAL QAF
+	['𞸓', 'r'], // ARABIC MATHEMATICAL REH
+	['𞸔', 'sh'], // ARABIC MATHEMATICAL SHEEN
+	['𞸕', 't'], // ARABIC MATHEMATICAL TEH
+	['𞸖', 'th'], // ARABIC MATHEMATICAL THEH
+	['𞸗', 'kh'], // ARABIC MATHEMATICAL KHAH
+	['𞸘', 'dh'], // ARABIC MATHEMATICAL THAL
+	['𞸙', 'd'], // ARABIC MATHEMATICAL DAD
+	['𞸚', 'z'], // ARABIC MATHEMATICAL ZAH
+	['𞸛', 'gh'], // ARABIC MATHEMATICAL GHAIN
+	['𞸜', 'b'], // ARABIC MATHEMATICAL DOTLESS BEH
+	['𞸝', 'n'], // ARABIC MATHEMATICAL DOTLESS NOON
+	['𞸞', 'f'], // ARABIC MATHEMATICAL DOTLESS FEH
+	['𞸟', 'q'], // ARABIC MATHEMATICAL DOTLESS QAF
+	['𞸡', 'b'], // ARABIC MATHEMATICAL INITIAL BEH
+	['𞸢', 'j'], // ARABIC MATHEMATICAL INITIAL JEEM
+	['𞸤', 'h'], // ARABIC MATHEMATICAL INITIAL HEH
+	['𞸧', 'h'], // ARABIC MATHEMATICAL INITIAL HAH
+	['𞸩', 'y'], // ARABIC MATHEMATICAL INITIAL YEH
+	['𞸪', 'k'], // ARABIC MATHEMATICAL INITIAL KAF
+	['𞸫', 'l'], // ARABIC MATHEMATICAL INITIAL LAM
+	['𞸬', 'm'], // ARABIC MATHEMATICAL INITIAL MEEM
+	['𞸭', 'n'], // ARABIC MATHEMATICAL INITIAL NOON
+	['𞸮', 's'], // ARABIC MATHEMATICAL INITIAL SEEN
+	['𞸯', 'e'], // ARABIC MATHEMATICAL INITIAL AIN
+	['𞸰', 'f'], // ARABIC MATHEMATICAL INITIAL FEH
+	['𞸱', 's'], // ARABIC MATHEMATICAL INITIAL SAD
+	['𞸲', 'q'], // ARABIC MATHEMATICAL INITIAL QAF
+	['𞸴', 'sh'], // ARABIC MATHEMATICAL INITIAL SHEEN
+	['𞸵', 't'], // ARABIC MATHEMATICAL INITIAL TEH
+	['𞸶', 'th'], // ARABIC MATHEMATICAL INITIAL THEH
+	['𞸷', 'kh'], // ARABIC MATHEMATICAL INITIAL KHAH
+	['𞸹', 'd'], // ARABIC MATHEMATICAL INITIAL DAD
+	['𞸻', 'gh'], // ARABIC MATHEMATICAL INITIAL GHAIN
+	['𞹂', 'j'], // ARABIC MATHEMATICAL TAILED JEEM
+	['𞹇', 'h'], // ARABIC MATHEMATICAL TAILED HAH
+	['𞹉', 'y'], // ARABIC MATHEMATICAL TAILED YEH
+	['𞹋', 'l'], // ARABIC MATHEMATICAL TAILED LAM
+	['𞹍', 'n'], // ARABIC MATHEMATICAL TAILED NOON
+	['𞹎', 's'], // ARABIC MATHEMATICAL TAILED SEEN
+	['𞹏', 'e'], // ARABIC MATHEMATICAL TAILED AIN
+	['𞹑', 's'], // ARABIC MATHEMATICAL TAILED SAD
+	['𞹒', 'q'], // ARABIC MATHEMATICAL TAILED QAF
+	['𞹔', 'sh'], // ARABIC MATHEMATICAL TAILED SHEEN
+	['𞹗', 'kh'], // ARABIC MATHEMATICAL TAILED KHAH
+	['𞹙', 'd'], // ARABIC MATHEMATICAL TAILED DAD
+	['𞹛', 'gh'], // ARABIC MATHEMATICAL TAILED GHAIN
+	['𞹝', 'n'], // ARABIC MATHEMATICAL TAILED DOTLESS NOON
+	['𞹟', 'q'], // ARABIC MATHEMATICAL TAILED DOTLESS QAF
+	['𞹡', 'b'], // ARABIC MATHEMATICAL STRETCHED BEH
+	['𞹢', 'j'], // ARABIC MATHEMATICAL STRETCHED JEEM
+	['𞹤', 'h'], // ARABIC MATHEMATICAL STRETCHED HEH
+	['𞹧', 'h'], // ARABIC MATHEMATICAL STRETCHED HAH
+	['𞹨', 't'], // ARABIC MATHEMATICAL STRETCHED TAH
+	['𞹩', 'y'], // ARABIC MATHEMATICAL STRETCHED YEH
+	['𞹪', 'k'], // ARABIC MATHEMATICAL STRETCHED KAF
+	['𞹬', 'm'], // ARABIC MATHEMATICAL STRETCHED MEEM
+	['𞹭', 'n'], // ARABIC MATHEMATICAL STRETCHED NOON
+	['𞹮', 's'], // ARABIC MATHEMATICAL STRETCHED SEEN
+	['𞹯', 'e'], // ARABIC MATHEMATICAL STRETCHED AIN
+	['𞹰', 'f'], // ARABIC MATHEMATICAL STRETCHED FEH
+	['𞹱', 's'], // ARABIC MATHEMATICAL STRETCHED SAD
+	['𞹲', 'q'], // ARABIC MATHEMATICAL STRETCHED QAF
+	['𞹴', 'sh'], // ARABIC MATHEMATICAL STRETCHED SHEEN
+	['𞹵', 't'], // ARABIC MATHEMATICAL STRETCHED TEH
+	['𞹶', 'th'], // ARABIC MATHEMATICAL STRETCHED THEH
+	['𞹷', 'kh'], // ARABIC MATHEMATICAL STRETCHED KHAH
+	['𞹹', 'd'], // ARABIC MATHEMATICAL STRETCHED DAD
+	['𞹺', 'z'], // ARABIC MATHEMATICAL STRETCHED ZAH
+	['𞹻', 'gh'], // ARABIC MATHEMATICAL STRETCHED GHAIN
+	['𞹼', 'b'], // ARABIC MATHEMATICAL STRETCHED DOTLESS BEH
+	['𞹾', 'f'], // ARABIC MATHEMATICAL STRETCHED DOTLESS FEH
+	['𞺀', 'a'], // ARABIC MATHEMATICAL LOOPED ALEF
+	['𞺁', 'b'], // ARABIC MATHEMATICAL LOOPED BEH
+	['𞺂', 'j'], // ARABIC MATHEMATICAL LOOPED JEEM
+	['𞺃', 'd'], // ARABIC MATHEMATICAL LOOPED DAL
+	['𞺄', 'h'], // ARABIC MATHEMATICAL LOOPED HEH
+	['𞺅', 'w'], // ARABIC MATHEMATICAL LOOPED WAW
+	['𞺆', 'z'], // ARABIC MATHEMATICAL LOOPED ZAIN
+	['𞺇', 'h'], // ARABIC MATHEMATICAL LOOPED HAH
+	['𞺈', 't'], // ARABIC MATHEMATICAL LOOPED TAH
+	['𞺉', 'y'], // ARABIC MATHEMATICAL LOOPED YEH
+	['𞺋', 'l'], // ARABIC MATHEMATICAL LOOPED LAM
+	['𞺌', 'm'], // ARABIC MATHEMATICAL LOOPED MEEM
+	['𞺍', 'n'], // ARABIC MATHEMATICAL LOOPED NOON
+	['𞺎', 's'], // ARABIC MATHEMATICAL LOOPED SEEN
+	['𞺏', 'e'], // ARABIC MATHEMATICAL LOOPED AIN
+	['𞺐', 'f'], // ARABIC MATHEMATICAL LOOPED FEH
+	['𞺑', 's'], // ARABIC MATHEMATICAL LOOPED SAD
+	['𞺒', 'q'], // ARABIC MATHEMATICAL LOOPED QAF
+	['𞺓', 'r'], // ARABIC MATHEMATICAL LOOPED REH
+	['𞺔', 'sh'], // ARABIC MATHEMATICAL LOOPED SHEEN
+	['𞺕', 't'], // ARABIC MATHEMATICAL LOOPED TEH
+	['𞺖', 'th'], // ARABIC MATHEMATICAL LOOPED THEH
+	['𞺗', 'kh'], // ARABIC MATHEMATICAL LOOPED KHAH
+	['𞺘', 'dh'], // ARABIC MATHEMATICAL LOOPED THAL
+	['𞺙', 'd'], // ARABIC MATHEMATICAL LOOPED DAD
+	['𞺚', 'z'], // ARABIC MATHEMATICAL LOOPED ZAH
+	['𞺛', 'gh'], // ARABIC MATHEMATICAL LOOPED GHAIN
+	['𞺡', 'b'], // ARABIC MATHEMATICAL DOUBLE-STRUCK BEH
+	['𞺢', 'j'], // ARABIC MATHEMATICAL DOUBLE-STRUCK JEEM
+	['𞺣', 'd'], // ARABIC MATHEMATICAL DOUBLE-STRUCK DAL
+	['𞺥', 'w'], // ARABIC MATHEMATICAL DOUBLE-STRUCK WAW
+	['𞺦', 'z'], // ARABIC MATHEMATICAL DOUBLE-STRUCK ZAIN
+	['𞺧', 'h'], // ARABIC MATHEMATICAL DOUBLE-STRUCK HAH
+	['𞺨', 't'], // ARABIC MATHEMATICAL DOUBLE-STRUCK TAH
+	['𞺩', 'y'], // ARABIC MATHEMATICAL DOUBLE-STRUCK YEH
+	['𞺫', 'l'], // ARABIC MATHEMATICAL DOUBLE-STRUCK LAM
+	['𞺬', 'm'], // ARABIC MATHEMATICAL DOUBLE-STRUCK MEEM
+	['𞺭', 'n'], // ARABIC MATHEMATICAL DOUBLE-STRUCK NOON
+	['𞺮', 's'], // ARABIC MATHEMATICAL DOUBLE-STRUCK SEEN
+	['𞺯', 'e'], // ARABIC MATHEMATICAL DOUBLE-STRUCK AIN
+	['𞺰', 'f'], // ARABIC MATHEMATICAL DOUBLE-STRUCK FEH
+	['𞺱', 's'], // ARABIC MATHEMATICAL DOUBLE-STRUCK SAD
+	['𞺲', 'q'], // ARABIC MATHEMATICAL DOUBLE-STRUCK QAF
+	['𞺳', 'r'], // ARABIC MATHEMATICAL DOUBLE-STRUCK REH
+	['𞺴', 'sh'], // ARABIC MATHEMATICAL DOUBLE-STRUCK SHEEN
+	['𞺵', 't'], // ARABIC MATHEMATICAL DOUBLE-STRUCK TEH
+	['𞺶', 'th'], // ARABIC MATHEMATICAL DOUBLE-STRUCK THEH
+	['𞺷', 'kh'], // ARABIC MATHEMATICAL DOUBLE-STRUCK KHAH
+	['𞺸', 'dh'], // ARABIC MATHEMATICAL DOUBLE-STRUCK THAL
+	['𞺹', 'd'], // ARABIC MATHEMATICAL DOUBLE-STRUCK DAD
+	['𞺺', 'z'], // ARABIC MATHEMATICAL DOUBLE-STRUCK ZAH
+	['𞺻', 'gh'], // ARABIC MATHEMATICAL DOUBLE-STRUCK GHAIN
 
 	// Russian
 	['А', 'A'],

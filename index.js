@@ -80,6 +80,10 @@ export default function transliterate(string, options) {
 		string = string.replaceAll(contextPattern, () => value);
 	}
 
+	// Arabic presentation forms are positional variants of the base letters, so they transliterate like the text
+	// they decompose to. This also expands the lam-alef ligatures into two letters.
+	string = string.replaceAll(/[\u{FB50}-\u{FDFF}\u{FE70}-\u{FEFF}]/gv, match => match.normalize('NFKC'));
+
 	string = string.replace(pattern, match => replacements.get(match) ?? match);
 	// ASCII carets and backticks are classified as diacritics but should remain literal punctuation.
 	// The negation stroke in `≠` is also not an accent, so it is excluded to keep the meaning.

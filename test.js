@@ -567,6 +567,43 @@ test('letterlike symbols match the mathematical letters they stand for', () => {
 	assert.equal(transliterate('℀ ℁ ℅ ℆'), 'a/c a/s c/o c/u');
 });
 
+test('Arabic presentation forms are transliterated', () => {
+	// These are positional variants of the base letters, so they transliterate like the text they decompose to
+	assert.equal(transliterate('ﺍﻟﻌﺮﺑﻴﺔ'), 'alerbyt');
+	assert.equal(transliterate('ﻣﺤﻤﺪ'), 'mhmd');
+
+	// Lam-alef ligatures decompose into two letters
+	assert.equal(transliterate('ﻻ'), 'la');
+	assert.equal(transliterate('ﷲ'), 'allh');
+});
+
+test('Arabic punctuation and separators are transliterated', () => {
+	assert.equal(transliterate('مرحبا، كيف حالك؟'), 'mrhba, kyf halk?');
+	assert.equal(transliterate('أ؛ب'), 'a;b');
+	assert.equal(transliterate('٪'), '%');
+	assert.equal(transliterate('١٫٥ ١٬٠٠٠'), '1.5 1,000');
+	assert.equal(transliterate('٭'), '*');
+	assert.equal(transliterate('۔'), '.');
+	assert.equal(transliterate('﴾ ﴿'), '( )');
+	assert.equal(transliterate('؍'), '/');
+});
+
+test('Arabic vowel and recitation marks are removed', () => {
+	// Unicode does not classify these combining marks as diacritics, so they stayed in the output
+	assert.equal(transliterate('ؘ ؙ ؚ'), 'a u i');
+	assert.equal(transliterate('ٓ ٔ ٕ ٖ'), ' '.repeat(3));
+	assert.equal(transliterate('ۖۗۘۙ'), '');
+	assert.equal(transliterate('ࢗ'), 'e');
+	assert.equal(transliterate('بَاتٓ'), 'baat');
+	assert.match(transliterate('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ'), /^\p{ASCII}+$/v);
+});
+
+test('Arabic tanween and superscript alef are transliterated', () => {
+	assert.equal(transliterate('شُكْرًا'), 'shukran');
+	assert.equal(transliterate('كِتَابٌ كِتَابٍ كِتَابًا'), 'kitaabun kitaabin kitaaban');
+	assert.equal(transliterate('رَحْمَٰن'), 'rahman');
+});
+
 test('common typographic symbols are transliterated', () => {
 	assert.equal(transliterate('Wait… and then⋯'), 'Wait... and then...');
 	assert.equal(transliterate('1⁄2'), '1/2');
@@ -641,6 +678,14 @@ test('Latin letters of African orthographies are transliterated', () => {
 
 	// Ewe and linguistic writing
 	assert.equal(transliterate('Ɣ ɣ Ʋ ʋ Ʃ ʃ Ʒ ʒ'), 'Gh gh V v Sh sh Zh zh');
+});
+
+test('Arabic letters of Persian, Urdu, Kurdish, Uyghur, and Sindhi are transliterated', () => {
+	assert.equal(transliterate('ٱ'), 'a');
+	assert.equal(transliterate('ۂ ۃ ۓ'), 'h t y');
+	assert.equal(transliterate('ۇ ۈ ۊ ۆ ۋ ۏ ۅ ە'), 'u u u o v v o e');
+	assert.equal(transliterate('ڭ ڴ ڻ'), 'ng ng n');
+	assert.equal(transliterate('ۇيغۇر'), 'uyghur');
 });
 
 test('Latin letters outside the basic set are transliterated', () => {
@@ -909,10 +954,33 @@ test('Arabic short vowels do not require direction marks', () => {
 	assert.equal(transliterate('بَ\u{200E} بِ\u{200E}'), 'ba\u{200E} bi\u{200E}');
 });
 
+test('Arabic-script letters of Kurdish, Sindhi, and Uyghur are transliterated', () => {
+	// Kurdish
+	assert.equal(transliterate('ڤ ڕ ڵ ێ'), 'v r l e');
+	assert.equal(transliterate('کوردی'), 'kwrdy');
+
+	// Sindhi implosives and retroflex letters
+	assert.equal(transliterate('ٻ ٺ ٽ ٿ ڀ'), 'b th t th bh');
+	assert.equal(transliterate('ڃ ڄ ڇ ڊ ڋ'), 'n j ch d d');
+	assert.equal(transliterate('ڌ ڍ ڎ ڏ ڐ ڙ'), 'dh dh d d d r');
+	assert.equal(transliterate('ڳ ڱ ڪ ڦ'), 'g ng k ph');
+
+	// Arabic and Quranic letters
+	assert.equal(transliterate('ٮ ٯ'), 'b q');
+	assert.equal(transliterate('ٲ ٳ ٴ ٵ ٶ ٷ ٸ'), 'a a \' a w u y');
+});
+
 test('Pashto tteh is a t rather than a p', () => {
 	assert.equal(transliterate('ټ بټ ټاټ'), 't bt tat');
 	assert.equal(transliterate('ټ پ ت ٹ'), 't p t t');
 	assert.equal(transliterate('ټ', {customReplacements: [['ټ', 'T']]}), 'T');
+});
+
+test('Arabic mathematical letters are transliterated', () => {
+	// The Arabic counterpart of the mathematical alphanumeric symbols, so they agree with the plain letters
+	assert.equal(transliterate('𞸀𞸁𞸂𞸃 𞸇𞸈𞸉𞸊'), 'abjd htyk');
+	assert.equal(transliterate('𞸤 𞺴 𞺻'), 'h sh gh');
+	assert.match(transliterate('𞸀𞸁𞸂'), /^\p{ASCII}+$/v);
 });
 
 test('Arabic presentation dhal matches its base letter', () => {
@@ -993,6 +1061,12 @@ test('all locale replacement rules are reachable and entirely ASCII', () => {
 			assert.equal(transliterate(original, {locale}), replacement, `${locale}: ${original}`);
 		}
 	}
+});
+
+test('no replacement key is a decomposed Arabic presentation form', () => {
+	// Presentation forms are expanded with NFKC before the lookup, so a key that decomposes can never match
+	const unreachableKeys = replacements.keys().filter(key => /[\u{FB50}-\u{FDFF}\u{FE70}-\u{FEFF}]/v.test(key) && key.normalize('NFKC') !== key).toArray();
+	assert.deepEqual(unreachableKeys, []);
 });
 
 test('characters with locale rules are also transliterated without a locale', () => {
@@ -1081,4 +1155,15 @@ test('lowercase letters never acquire uppercase transliterations', () => {
 test('Latin gha is a consonant rather than an oi digraph', () => {
 	assert.equal(transliterate('Ƣƣ'), 'Ghgh');
 	assert.equal(transliterate('ƣalaba'), 'ghalaba');
+});
+
+test('Sindhi aspiration and the implosive j retain their consonants', () => {
+	assert.equal(transliterate('ٽ ٺ ت ٿ ج ڄ'), 't th t th j j');
+	assert.equal(transliterate('ﭞ ﭟ ﭠ ﭡ'), 'th th th th');
+});
+
+test('fathatan on either side of the silent alef has the same ending', () => {
+	assert.equal(transliterate('شُكْرًا شُكْراً'), 'shukran shukran');
+	assert.equal(transliterate('كِتَابًا كِتَاباً'), 'kitaaban kitaaban');
+	assert.equal(transliterate('ﴼ ﴽ'), 'an an');
 });
