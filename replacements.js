@@ -1,3 +1,91 @@
+// The characters from `start` to `end`, inclusive, which the generated tables below are built from.
+const codePointRange = (start, end) => Array.from({length: end - start + 1}, (_, index) => String.fromCodePoint(start + index));
+
+// Full-width ASCII variants (ＡＢＣ → ABC) are a fixed offset from their ASCII counterparts.
+const fullWidthReplacements = Array.from({length: 0x5E}, (_, index) => {
+	const codePoint = 0xFF_01 + index;
+	return [String.fromCodePoint(codePoint), String.fromCodePoint(codePoint - 0xFE_E0)];
+});
+
+// Roman numerals have the same values in the uppercase (U+2160) and lowercase (U+2170) blocks.
+const romanNumeralReplacements = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'L', 'C', 'D', 'M'].flatMap((value, index) => [
+	[String.fromCodePoint(0x21_60 + index), value],
+	[String.fromCodePoint(0x21_70 + index), value.toLowerCase()],
+]);
+
+// Letterlike symbols are math-style variants of plain ASCII letters. Most decompose to the plain letter, while the rest stand for a word. A symbol that is not in NFC, like the Kelvin sign, is excluded because the input is normalized to NFC before matching.
+const letterlikeReplacements = [
+	...Array.from({length: 0x21_50 - 0x21_00}, (_, index) => String.fromCodePoint(0x21_00 + index))
+		.map(character => [character, character.normalize('NFKC')])
+		.filter(([character, value]) => character.normalize() === character && /^[0-9A-Za-z]$/v.test(value)),
+	['\u{2C7C}', 'j'], // Subscript `j`
+	['\u{2C7D}', 'V'], // Modifier capital `V`
+	['℀', 'a/c'], // Account of
+	['℁', 'a/s'], // Addressed to the subject
+	['℅', 'c/o'], // Care of
+	['℆', 'c/u'], // Each
+	['℠', '(sm)'], // Service mark
+	['℡', 'TEL'],
+	['℻', 'FAX'],
+];
+
+// Encapsulated digits and capitals, in the styles that the explicit table entries do not cover. Each block is a fixed sequence.
+const uppercaseLetters = Array.from({length: 26}, (_, index) => String.fromCodePoint(0x41 + index));
+
+const enclosedAlphanumericReplacements = [
+	// Dingbat, circled sans-serif, and negative circled digits one to ten
+	...[0x27_76, 0x27_80, 0x27_8A].flatMap(start => Array.from({length: 10}, (_, index) => [String.fromCodePoint(start + index), String(index + 1)])),
+	// Circled numbers twenty-one to fifty
+	...Array.from({length: 15}, (_, index) => [String.fromCodePoint(0x32_51 + index), String(index + 21)]),
+	...Array.from({length: 15}, (_, index) => [String.fromCodePoint(0x32_B1 + index), String(index + 36)]),
+	// Parenthesized capitals
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_10 + index), `(${letter})`]),
+	// Squared and negative circled capitals
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_30 + index), letter]),
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_50 + index), letter]),
+	// Digits followed by a decimal separator
+	[String.fromCodePoint(0x1_F1_00), '0.'],
+	...Array.from({length: 10}, (_, index) => [String.fromCodePoint(0x1_F1_01 + index), `${index},`]),
+	[String.fromCodePoint(0x1_F1_0B), '0'],
+	[String.fromCodePoint(0x1_F1_0C), '0'],
+	// Encapsulated symbols that stand for several letters
+	['🄫', 'C'],
+	['🄬', 'R'],
+	['🄭', 'CD'],
+	['🄮', 'WZ'],
+	['🅊', 'HV'],
+	['🅋', 'MV'],
+	['🅌', 'SD'],
+	['🅍', 'SS'],
+	['🅎', 'PPV'],
+	['🅏', 'WC'],
+	['🅪', 'MC'],
+	['🅫', 'MD'],
+	['🅬', 'MR'],
+	['🆐', 'DJ'],
+	['㉐', 'PTE'], // Partnership sign
+	['﬩', '+'], // Hebrew alternative plus sign
+];
+
+// These blocks hold the squared units of CJK text, the vertical and small forms of punctuation, and the segmented letters. Every character whose compatibility decomposition is plain ASCII text takes that text.
+const compatibilityFormRanges = [
+	[0x32_CC, 0x32_CF],
+	[0x33_00, 0x33_FF],
+	[0xFE_10, 0xFE_1F],
+	[0xFE_30, 0xFE_68],
+	[0xFE_6A, 0xFE_6F],
+	[0x1_FB_F0, 0x1_FB_F9],
+];
+
+const compatibilityFormReplacements = [
+	...compatibilityFormRanges
+		.flatMap(([start, end]) => codePointRange(start, end))
+		.map(character => [character, character.normalize('NFKC')])
+		.filter(([, value]) => /^\p{ASCII}+$/v.test(value)),
+	// Outlined letters and digits form one fixed sequence. Generate them explicitly because Node.js 22 does not know their Unicode 16 compatibility decompositions.
+	...[...uppercaseLetters, ...codePointRange(0x30, 0x39)].map((character, index) => [String.fromCodePoint(0x1_CC_D6 + index), character]),
+];
+
 const replacements = [
 	// German umlauts
 	['ß', 'ss'],
@@ -82,6 +170,28 @@ const replacements = [
 	['ý', 'y'],
 	['þ', 'th'],
 	['ÿ', 'y'],
+
+	// Latin ligatures and digraphs
+	['ſ', 's'],
+	['ﬀ', 'ff'],
+	['ﬁ', 'fi'],
+	['ﬂ', 'fl'],
+	['ﬃ', 'ffi'],
+	['ﬄ', 'ffl'],
+	['ﬅ', 'st'],
+	['ﬆ', 'st'],
+	['Ǆ', 'DZ'],
+	['ǅ', 'Dz'],
+	['ǆ', 'dz'],
+	['Ǉ', 'LJ'],
+	['ǈ', 'Lj'],
+	['ǉ', 'lj'],
+	['Ǌ', 'NJ'],
+	['ǋ', 'Nj'],
+	['ǌ', 'nj'],
+	['Ǳ', 'DZ'],
+	['ǲ', 'Dz'],
+	['ǳ', 'dz'],
 
 	// Vietnamese
 	['à', 'a'],
@@ -828,6 +938,7 @@ const replacements = [
 
 	// Currencies
 	['¢', 'c'],
+	['£', 'L'],
 	['¥', 'Y'],
 	['߿', 'b'],
 	['৳', 't'],
@@ -837,6 +948,7 @@ const replacements = [
 	['₡', 'C'],
 	['₢', 'Cr'],
 	['₣', 'F'],
+	['₤', 'L'],
 	['₥', 'm'],
 	['₦', 'N'],
 	['₧', 'Pt'],
@@ -862,8 +974,12 @@ const replacements = [
 	['₿', 'B'],
 	['﹩', '$'],
 	['￠', 'c'],
+	['￡', 'L'],
 	['￥', 'Y'],
 	['￦', 'W'],
+
+	// Letterlike symbols, which are the same letters as the mathematical alphanumeric symbols below
+	...letterlikeReplacements,
 
 	// Latin
 	['𝐀', 'A'],
@@ -1906,6 +2022,58 @@ const replacements = [
 	['ż', 'z'],
 
 	// Numbers
+	['½', '1/2'],
+	['⅓', '1/3'],
+	['⅔', '2/3'],
+	['¼', '1/4'],
+	['¾', '3/4'],
+	['⅕', '1/5'],
+	['⅖', '2/5'],
+	['⅗', '3/5'],
+	['⅘', '4/5'],
+	['⅙', '1/6'],
+	['⅚', '5/6'],
+	['⅐', '1/7'],
+	['⅛', '1/8'],
+	['⅜', '3/8'],
+	['⅝', '5/8'],
+	['⅞', '7/8'],
+	['⅑', '1/9'],
+	['⅒', '1/10'],
+	['⅟', '1/'], // Fraction numerator one
+	['↉', '0/3'], // Vulgar fraction zero thirds
+	['ↄ', 'c'], // Reversed C
+
+	['¹', '1'],
+	['²', '2'],
+	['³', '3'],
+	['⁰', '0'],
+	['⁴', '4'],
+	['⁵', '5'],
+	['⁶', '6'],
+	['⁷', '7'],
+	['⁸', '8'],
+	['⁹', '9'],
+	['⁺', '+'],
+	['⁻', '-'],
+	['⁼', '='],
+	['⁽', '('],
+	['⁾', ')'],
+	['₀', '0'],
+	['₁', '1'],
+	['₂', '2'],
+	['₃', '3'],
+	['₄', '4'],
+	['₅', '5'],
+	['₆', '6'],
+	['₇', '7'],
+	['₈', '8'],
+	['₉', '9'],
+	['₊', '+'],
+	['₋', '-'],
+	['₌', '='],
+	['₍', '('],
+	['₎', ')'],
 	['𝟎', '0'],
 	['𝟏', '1'],
 	['𝟐', '2'],
@@ -2016,6 +2184,9 @@ const replacements = [
 	['⒙', '18.'],
 	['⒚', '19.'],
 	['⒛', '20.'],
+	...enclosedAlphanumericReplacements,
+	// Squared units, vertical and small punctuation forms, and segmented and outlined letters
+	...compatibilityFormReplacements,
 	['⓪', '0'],
 	['⓫', '11'],
 	['⓬', '12'],
@@ -2039,7 +2210,31 @@ const replacements = [
 	['⓾', '10'],
 	['⓿', '0'],
 
+	// Roman numerals
+	...romanNumeralReplacements,
+
+	// Full-width ASCII variants (ＡＢＣ → ABC, ！ → !)
+	...fullWidthReplacements,
+
 	// Punctuation
+	['‘', '\''],
+	['’', '\''],
+	['‚', '\''],
+	['‛', '\''],
+	['‹', '\''],
+	['›', '\''],
+	['′', '\''],
+	['‵', '\''],
+	['“', '"'],
+	['”', '"'],
+	['„', '"'],
+	['‟', '"'],
+	['«', '"'],
+	['»', '"'],
+	['″', '"'],
+	['‶', '"'],
+	['‴', '\'\'\''],
+	['‷', '\'\'\''],
 	['🙰', '&'],
 	['🙱', '&'],
 	['🙲', '&'],
@@ -2049,7 +2244,59 @@ const replacements = [
 	['🙶', '"'],
 	['🙷', '"'],
 	['🙸', '"'],
+	['…', '...'],
+	['⋯', '...'],
+	['‥', '..'],
+	['․', '.'], // One dot leader
+	['‼', '!!'],
+	['⁇', '??'],
+	['⁈', '?!'],
+	['⁉', '!?'],
+	['⩴', '::='],
+	['⩵', '=='],
+	['⩶', '==='],
+	['⁄', '/'],
+	['№', 'No'],
+	['™', '(tm)'],
+	['©', '(c)'],
+	['®', '(r)'],
+	['¿', '?'],
+	['¡', '!'],
 	['‽', '?!'],
+	// Supplemental punctuation, which is the editorial counterpart of the marks above
+	['⸘', '?!'], // U+2E18
+	['⸜', '('], // U+2E1C
+	['⸝', ')'], // U+2E1D
+	['⸢', '['], // U+2E22
+	['⸣', ']'], // U+2E23
+	['⸤', '['], // U+2E24
+	['⸥', ']'], // U+2E25
+	['⸦', '('], // U+2E26
+	['⸧', ')'], // U+2E27
+	['⸨', '(('], // U+2E28
+	['⸩', '))'], // U+2E29
+	['⸪', ':'], // U+2E2A
+	['⸫', ':'], // U+2E2B
+	['⸮', '?'], // U+2E2E
+	['⸱', '.'], // U+2E31
+	['⸲', ','], // U+2E32
+	['⸴', ','], // U+2E34
+	['⸵', ';'], // U+2E35
+	['⸼', '.'], // U+2E3C
+	['⹁', ','], // U+2E41
+	['⹂', '"'], // U+2E42
+	['⹕', '['], // U+2E55
+	['⹖', ']'], // U+2E56
+	['⹗', '['], // U+2E57
+	['⹘', ']'], // U+2E58
+	['⹙', '('], // U+2E59
+	['⹚', ')'], // U+2E5A
+	['⹛', '('], // U+2E5B
+	['⹜', ')'], // U+2E5C
+	['⹠', '!'], // U+2E60
+	['⹡', '!'], // U+2E61
+	['⹢', '('], // U+2E62
+	['⹣', ')'], // U+2E63
 	['🙹', '?!'],
 	['🙺', '?!'],
 	['🙻', '?!'],
@@ -2088,24 +2335,22 @@ const replacements = [
 	['🔡', 'abcd'],
 	['🔢', '1234'],
 	['🔣', 'T&@%'],
-	['#️⃣', '#'],
-	['*️⃣', '*'],
-	['0️⃣', '0'],
-	['1️⃣', '1'],
-	['2️⃣', '2'],
-	['3️⃣', '3'],
-	['4️⃣', '4'],
-	['5️⃣', '5'],
-	['6️⃣', '6'],
-	['7️⃣', '7'],
-	['8️⃣', '8'],
-	['9️⃣', '9'],
+	// The emoji presentation selector (U+FE0F) is optional, so keycaps and squared letters are listed with and without it
+	...['#', '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].flatMap(key => [
+		[`${key}\u{FE0F}\u{20E3}`, key],
+		[`${key}\u{20E3}`, key],
+	]),
+	...[
+		['\u{1F170}', 'A'], // Squared A
+		['\u{1F171}', 'B'], // Squared B
+		['\u{1F17E}', 'O'], // Squared O
+	].flatMap(([key, value]) => [
+		[`${key}\u{FE0F}`, value],
+		[key, value],
+	]),
 	['🔟', '10'],
-	['🅰️', 'A'],
-	['🅱️', 'B'],
 	['🆎', 'AB'],
 	['🆑', 'CL'],
-	['🅾️', 'O'],
 	['🅿', 'P'],
 	['🆘', 'SOS'],
 	['🅲', 'C'],
@@ -2134,6 +2379,7 @@ const replacements = [
 	// Dashes not covered by Dash_Punctuation category
 	['−', '-'], // U+2212 Minus Sign (Mathematical Operators category)
 	['⁓', '-'], // U+2053 Swung Dash (Other_Punctuation category)
+	['⁃', '-'], // U+2043 Hyphen Bullet (Other_Punctuation category)
 ];
 
 const builtinReplacements = new Map(replacements);

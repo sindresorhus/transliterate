@@ -111,6 +111,8 @@ The following locales have specific replacement rules when using the `locale` op
 - `sv` - Swedish
 - `tr` - Turkish
 
+The `no` and `nn` language codes are aliases for `nb`.
+
 ## Supported languages
 
 Most major languages are supported.

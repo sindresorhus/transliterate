@@ -39,6 +39,8 @@ export type Options = {
 
 	When specified, uses language-specific replacement rules for characters that have different transliterations in different languages.
 
+	The `no` and `nn` language codes are aliases for `nb`.
+
 	@example
 	```
 	import transliterate from '@sindresorhus/transliterate';

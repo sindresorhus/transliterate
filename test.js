@@ -167,6 +167,7 @@ test('normalizes various dash types to hyphen', () => {
 	assert.equal(transliterate('horizontal―bar'), 'horizontal-bar'); // Horizontal bar (U+2015)
 	assert.equal(transliterate('swung⁓dash'), 'swung-dash'); // Swung dash (U+2053)
 	assert.equal(transliterate('two⸺em⸻dash'), 'two-em-dash'); // Two-em dash (U+2E3A) and Three-em dash (U+2E3B)
+	assert.equal(transliterate('hyphen⁃bullet'), 'hyphen-bullet'); // Hyphen bullet (U+2043)
 
 	// Combined test
 	assert.equal(transliterate('test–with—various−dashes‒here'), 'test-with-various-dashes-here');
@@ -193,6 +194,7 @@ test('locale option for language-specific transliteration', () => {
 	// Norwegian
 	assert.equal(transliterate('Rød grød med fløde', {locale: 'no'}), 'Roed groed med floede');
 	assert.equal(transliterate('Rød grød med fløde', {locale: 'nb'}), 'Roed groed med floede');
+	assert.equal(transliterate('Rød grød med fløde', {locale: 'nn'}), 'Roed groed med floede'); // Nynorsk uses the same rules
 
 	// Unknown locale falls back to default
 	assert.equal(transliterate('Räksmörgås', {locale: 'unknown'}), 'Raeksmoergas');
@@ -302,6 +304,156 @@ test('French œ ligature support - Issue #7', () => {
 	assert.equal(transliterate('œuf'), 'oeuf');
 	assert.equal(transliterate('Œuvre'), 'OEuvre');
 	assert.equal(transliterate('cœur'), 'coeur');
+});
+
+test('Latin ligatures and digraphs are expanded', () => {
+	assert.equal(transliterate('ﬀﬁﬂﬃﬄﬅﬆ'), 'fffiflffifflstst');
+	assert.equal(transliterate('ſ'), 's');
+
+	// Croatian, Serbian, and Hungarian digraphs
+	assert.equal(transliterate('Ǆ ǅ ǆ Ǉ ǈ ǉ Ǌ ǋ ǌ Ǳ ǲ ǳ'), 'DZ Dz dz LJ Lj lj NJ Nj nj DZ Dz dz');
+
+	assert.equal(transliterate('ﬁ', {locale: 'tr'}), 'fi');
+	assert.equal(transliterate('ﬁ', {customReplacements: [['ﬁ', 'FI']]}), 'FI');
+});
+
+test('full-width ASCII variants are transliterated', () => {
+	// U+FF01–U+FF5E are the full-width forms of printable ASCII (U+0021–U+007E)
+	const ascii = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~';
+	const fullWidth = Array.from({length: 0x5E}, (_, index) => String.fromCodePoint(0xFF_01 + index)).join('');
+
+	assert.equal(transliterate(fullWidth), ascii);
+	assert.equal(transliterate('Ｔｅｓｔ Ｎａｍｅ'), 'Test Name');
+	assert.equal(transliterate('１２３！？'), '123!?');
+	assert.equal(transliterate('Ａｂ１', {locale: 'sv'}), 'Ab1');
+	assert.equal(transliterate('Ａｂ１', {customReplacements: [['Ａｂ', 'X']]}), 'X1');
+});
+
+test('typographic quotes and primes become ASCII quotes', () => {
+	assert.equal(transliterate('‘x’ ‚x‛ ‹x› ′x‵'), '\'x\' \'x\' \'x\' \'x\'');
+	assert.equal(transliterate('“x” „x‟ «x» ″x‶'), '"x" "x" "x" "x"');
+	assert.equal(transliterate('‴x‷'), '\'\'\'x\'\'\'');
+	assert.equal(transliterate('don’t'), 'don\'t');
+	assert.equal(transliterate('«déjà»', {locale: 'de'}), '"deja"');
+});
+
+test('emoji presentation selectors are optional', () => {
+	// The same emoji can be written with or without the emoji presentation selector (U+FE0F)
+	assert.equal(transliterate('#⃣ *⃣ 0⃣ 9⃣'), '# * 0 9');
+	assert.equal(transliterate('1⃣2⃣3⃣'), '123');
+	assert.equal(transliterate('🅰 🅱 🅾'), 'A B O');
+	assert.equal(transliterate('🅰️ 🅱️ 🅾️ 1️⃣ #️⃣'), 'A B O 1 #');
+});
+
+test('compatibility forms of ASCII text are transliterated', () => {
+	// Squared units, which are common in Japanese and Korean text
+	assert.equal(transliterate('1㎏ 2㎒ 3㎡ 4㍱'), '1kg 2MHz 3m2 4hPa');
+
+	// Vertical and small forms of punctuation
+	assert.equal(transliterate('︵a︶ ﹙b﹚'), '(a) (b)');
+	assert.equal(transliterate('﹐﹒﹔﹖﹗'), ',.;?!');
+	assert.equal(transliterate('﹨'), '\\');
+
+	// Segmented and outlined letters
+	assert.equal(transliterate('🯱🯲🯳 𜳖𜳗𜳰'), '123 AB0');
+	assert.equal(transliterate('𜳯𜳰𜳹'), 'Z09');
+
+	// Every character in these blocks that Unicode defines as a compatibility form of ASCII text reduces to that text
+	const ranges = [
+		[0x32_CC, 0x32_CF],
+		[0x33_00, 0x33_FF],
+		[0xFE_10, 0xFE_1F],
+		[0xFE_30, 0xFE_68],
+		[0xFE_6A, 0xFE_6F],
+		[0x1_FB_F0, 0x1_FB_F9],
+		[0x1_CC_00, 0x1_CE_BF],
+	];
+	for (const [start, end] of ranges) {
+		for (let codePoint = start; codePoint <= end; codePoint++) {
+			const character = String.fromCodePoint(codePoint);
+			const decomposed = character.normalize('NFKC');
+			if (/^\p{ASCII}+$/v.test(decomposed)) {
+				assert.equal(transliterate(character), decomposed, codePoint.toString(16));
+			}
+		}
+	}
+});
+
+test('letterlike symbols match the mathematical letters they stand for', () => {
+	// The mathematical alphanumeric block is covered, so the same letters in the letterlike block must be too
+	assert.equal(transliterate('ℂ ℊ ℎ ℓ ℕ ℙ ℚ ℝ ℤ'), 'C g h l N P Q R Z');
+	assert.equal(transliterate('ℬ ℭ ℯ ℰ ℱ ℳ ℴ ℨ'), 'B C e E F M o Z');
+	assert.equal(transliterate('ℋ ℌ ℍ ℐ ℑ ℒ ℛ ℜ'), 'H H H I I L R R');
+	assert.equal(transliterate('ⅅ ⅆ ⅇ ⅈ ⅉ ℹ ⱼ ⱽ'), 'D d e i j i j V');
+
+	// Symbols that stand for a word decompose to that word
+	assert.equal(transliterate('℠ ℡ ℻'), '(sm) TEL FAX');
+	assert.equal(transliterate('℀ ℁ ℅ ℆'), 'a/c a/s c/o c/u');
+});
+
+test('common typographic symbols are transliterated', () => {
+	assert.equal(transliterate('Wait… and then⋯'), 'Wait... and then...');
+	assert.equal(transliterate('1⁄2'), '1/2');
+	assert.equal(transliterate('№5'), 'No5');
+	assert.equal(transliterate('™ © ®'), '(tm) (c) (r)');
+	assert.equal(transliterate('¿Qué? ¡Sí!'), '?Que? !Si!');
+
+	// Stacked punctuation and mathematical relations
+	assert.equal(transliterate('Wow!! Really?? What?!'), 'Wow!! Really?? What?!');
+	assert.equal(transliterate('Wow‼ Really⁇ What⁈ No⁉'), 'Wow!! Really?? What?! No!?');
+	assert.equal(transliterate('a․b'), 'a.b');
+	assert.equal(transliterate('x⩴y⩵z⩶'), 'x::=y==z===');
+});
+
+test('supplemental punctuation is transliterated', () => {
+	// Editorial marks from the Supplemental Punctuation block
+	assert.equal(transliterate('⸮'), '?');
+	assert.equal(transliterate('⸘'), '?!');
+	assert.equal(transliterate('⸢a⸣ ⸤b⸥'), '[a] [b]');
+	assert.equal(transliterate('⸦a⸧ ⸨b⸩'), '(a) ((b))');
+	assert.equal(transliterate('⸜a⸝ ⹙b⹚'), '(a) (b)');
+	assert.equal(transliterate('⸲ ⸴ ⹁ ⹂'), ', , , "');
+	assert.equal(transliterate('⸵ ⸱ ⸼'), '; . .');
+	assert.equal(transliterate('⸪ ⸫'), ': :');
+	assert.equal(transliterate('⹠⹡ ⹢a⹣'), '!! (a)');
+});
+
+test('currency and fraction symbols are transliterated', () => {
+	assert.equal(transliterate('£5 ₤5 ￡5'), 'L5 L5 L5');
+	assert.equal(transliterate('½ ⅓ ⅔ ¼ ¾ ⅕ ⅖ ⅗ ⅘'), '1/2 1/3 2/3 1/4 3/4 1/5 2/5 3/5 4/5');
+	assert.equal(transliterate('⅙ ⅚ ⅐ ⅛ ⅜ ⅝ ⅞ ⅑ ⅒'), '1/6 5/6 1/7 1/8 3/8 5/8 7/8 1/9 1/10');
+	assert.equal(transliterate('⅟₂ ↉ ↄ'), '1/2 0/3 c');
+});
+
+test('enclosed alphanumerics are transliterated', () => {
+	// Dingbat, circled sans-serif, and negative circled digits one to ten
+	assert.equal(transliterate('❶❷❸❹❺❻❼❽❾❿'), '12345678910');
+	assert.equal(transliterate('➀➁➂➃➄➅➆➇➈➉'), '12345678910');
+	assert.equal(transliterate('➊➋➌➍➎➏➐➑➒➓'), '12345678910');
+
+	// Circled numbers above twenty
+	assert.equal(transliterate('㉑ ㉟ ㊱ ㊿'), '21 35 36 50');
+
+	// Encapsulated capitals, in the styles of the already supported circled letters
+	assert.equal(transliterate('🄐🄑🄒'), '(A)(B)(C)');
+	assert.equal(transliterate('🄰🄱🄲'), 'ABC');
+	assert.equal(transliterate('🅐🅑🅒'), 'ABC');
+
+	// Digits with a trailing separator
+	assert.equal(transliterate('🄀🄁 🄊'), '0.0, 9,');
+	assert.equal(transliterate('🄋🄌'), '00');
+
+	// Encapsulated symbols that stand for several letters
+	assert.equal(transliterate('🄫 🄬 🄭 🄮'), 'C R CD WZ');
+	assert.equal(transliterate('🅊 🅋 🅌 🅍 🅎 🅏'), 'HV MV SD SS PPV WC');
+	assert.equal(transliterate('🅪 🅫 🅬 🆐'), 'MC MD MR DJ');
+	assert.equal(transliterate('㉐ ﬩'), 'PTE +');
+});
+
+test('Roman numerals are transliterated', () => {
+	assert.equal(transliterate('Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ Ⅼ Ⅽ Ⅾ Ⅿ'), 'I II III IV V VI VII VIII IX X XI XII L C D M');
+	assert.equal(transliterate('ⅰ ⅱ ⅲ ⅳ ⅴ ⅵ ⅶ ⅷ ⅸ ⅹ ⅺ ⅻ ⅼ ⅽ ⅾ ⅿ'), 'i ii iii iv v vi vii viii ix x xi xii l c d m');
+	assert.equal(transliterate('Chapter Ⅳ'), 'Chapter IV');
 });
 
 test('longer built-in keys take precedence over neighboring single characters', () => {
@@ -425,6 +577,7 @@ test('locale tags are case insensitive and use the language prefix', () => {
 	assert.equal(transliterate('äöå', {locale: 'SV-se-u-co-standard'}), 'aoa');
 	assert.equal(transliterate('æøå', {locale: 'NO-no'}), 'aeoeaa');
 	assert.equal(transliterate('æøå', {locale: 'NB-no'}), 'aeoeaa');
+	assert.equal(transliterate('æøå', {locale: 'NN-no'}), 'aeoeaa');
 	assert.equal(transliterate('öü', {locale: 'TR-tr'}), 'ou');
 	for (const locale of ['', 'unknown', '__proto__', 'constructor', 'toString']) {
 		assert.equal(transliterate('äöü', {locale}), 'aeoeue');
@@ -646,4 +799,12 @@ test('custom replacements preserve sequential replacement and JavaScript substit
 	assert.equal(transliterate('a', {customReplacements: [['a', 'b'], ['b', 'c']]}), 'c');
 	assert.equal(transliterate('x', {customReplacements: [['x', '$$$&$1']]}), '$x$1');
 	assert.equal(transliterate('xx', {customReplacements: [['x', '[$&]']]}), '[x][x]');
+});
+
+test('superscript and subscript characters are transliterated', () => {
+	assert.equal(transliterate('x² y³ z¹'), 'x2 y3 z1');
+	assert.equal(transliterate('H₂O CO₂'), 'H2O CO2');
+	assert.equal(transliterate('⁰¹²³⁴⁵⁶⁷⁸⁹'), '0123456789');
+	assert.equal(transliterate('₀₁₂₃₄₅₆₇₈₉'), '0123456789');
+	assert.equal(transliterate('⁺⁻⁼⁽⁾ ₊₋₌₍₎'), '+-=() +-=()');
 });

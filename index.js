@@ -39,8 +39,8 @@ const normalizeLocale = locale => {
 	}
 
 	const normalizedLocale = locale.toLowerCase()
-		// Norwegian (no) is an alias for Norwegian Bokmål (nb)
-		.replace(/^no(?<suffix>-|$)/v, 'nb$<suffix>');
+		// The Norwegian codes `no` (generic) and `nn` (Nynorsk) use the Bokmål (`nb`) rules
+		.replace(/^(?:no|nn)(?<suffix>-|$)/v, 'nb$<suffix>');
 
 	if (Object.hasOwn(localeReplacements, normalizedLocale)) {
 		return normalizedLocale;
