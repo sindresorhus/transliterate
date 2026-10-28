@@ -119,6 +119,10 @@ test('supports Dhivehi', () => {
 
 test('supports Greek', () => {
 	assert.equal(transliterate('θ Γ Ξ'), 'th G KS');
+
+	// Beta is `v` in modern Greek, so the capital must agree with the lowercase letter
+	assert.equal(transliterate('β Β'), 'v V');
+	assert.equal(transliterate('ΒΗΤΑ βητα'), 'VITA vita');
 });
 
 test('supports Hungarian', () => {
@@ -323,6 +327,32 @@ test('Armenian punctuation is transliterated', () => {
 	// Phonetic letters outside the main alphabet
 	assert.equal(transliterate('ՠ ֈ'), 'a y');
 	assert.equal(transliterate('Ս.Ս.Ս.Ռ՟'), 'S.S.S.R.');
+});
+
+test('Greek small capitals and phonetic modifier letters are transliterated', () => {
+	// Small capitals of Greek letters, in the phonetic extensions block
+	assert.equal(transliterate('ᴦ ᴧ ᴨ ᴩ ᴪ'), 'g l p r ps');
+	assert.equal(transliterate('϶'), 'e');
+
+	// Modifier letters whose base letter already has a value
+	assert.equal(transliterate('ᶞ ᶴ ᶾ ᶵ ᶹ ᶿ'), 'd sh zh t v th');
+});
+
+test('Greek symbol and archaic letters are transliterated', () => {
+	// Typographic variants of the letters carry the same value as the letters
+	assert.equal(transliterate('ϐ ϑ ϕ ϖ ϰ ϱ ϲ ϳ ϵ ϗ'), 'v th f p k r s j e k');
+	assert.equal(transliterate('ϒ ϓ ϔ ϴ'), 'Y Y Y TH');
+
+	// Obsolete letters
+	assert.equal(transliterate('Ͱ Ͳ Ͷ Ϳ Ϸ'), 'H SS W J SH');
+	assert.equal(transliterate('Ϙ Ϛ Ϝ Ϟ Ϡ Ϻ ϼ Ͻ Ͼ Ͽ'), 'Q ST W Q SS S r S S S');
+	assert.equal(transliterate('ͻ ͼ ͽ'), 's s s');
+
+	// Case partners agree with the lowercase forms
+	assert.equal(transliterate('ϑ ϴ ͱ ͳ ͷ ͻ'), 'th TH h ss w s');
+
+	// The mathematical digamma agrees with the letter it decomposes to
+	assert.equal(transliterate('𝟊 𝟋'), 'W w');
 });
 
 test('Armenian yiwn and presentation ligatures are transliterated', () => {
@@ -666,7 +696,7 @@ test('mathematical Greek alphabets are complete and consistent across styles', (
 	const alphabet = start => Array.from({length: 58}, (_, index) => String.fromCodePoint(start + index)).join('');
 	for (let style = 0; style < 5; style++) {
 		const characters = alphabet(0x1_D6_A8 + (style * 58));
-		assert.equal(transliterate(characters), 'ABGDEZITHIKLMNKSOPRTHSTYFXPSODavgdezithiklmnksoprsstyfxpsodethkfrp', characters);
+		assert.equal(transliterate(characters), 'AVGDEZITHIKLMNKSOPRTHSTYFXPSODavgdezithiklmnksoprsstyfxpsodethkfrp', characters);
 	}
 });
 
@@ -915,6 +945,19 @@ test('custom replacements preserve sequential replacement and JavaScript substit
 	assert.equal(transliterate('a', {customReplacements: [['a', 'b'], ['b', 'c']]}), 'c');
 	assert.equal(transliterate('x', {customReplacements: [['x', '$$$&$1']]}), '$x$1');
 	assert.equal(transliterate('xx', {customReplacements: [['x', '[$&]']]}), '[x][x]');
+});
+
+test('Greek rho variants retain their letter and case', () => {
+	assert.equal(transliterate('ρ ϱ ᴩ ϼ Ρ'), 'r r r r R');
+	assert.equal(transliterate('ᴩόδος ϼόδος'), 'rodos rodos');
+});
+
+test('lowercase letters never acquire uppercase transliterations', () => {
+	for (const [character, replacement] of replacements) {
+		if (/^\p{Lowercase_Letter}$/v.test(character)) {
+			assert.equal(replacement, replacement.toLowerCase(), character);
+		}
+	}
 });
 
 test('Latin gha is a consonant rather than an oi digraph', () => {

@@ -139,6 +139,12 @@ const modifierLetterBases = new Map([
 	['₝', 'w'],
 	['₞', 'y'],
 	['₟', 'z'],
+	['ᶞ', 'd'], // Eth
+	['ᶴ', 'sh'], // Esh
+	['ᶾ', 'zh'], // Ezh
+	['ᶵ', 't'], // T with palatal hook
+	['ᶹ', 'v'], // V with hook
+	['ᶿ', 'th'], // Theta
 ]);
 
 const modifierLetterReplacements = modifierLetterRanges
@@ -1080,7 +1086,7 @@ const replacements = [
 	['ϋ', 'y'],
 	['ΐ', 'i'],
 	['Α', 'A'],
-	['Β', 'B'],
+	['Β', 'V'],
 	['Γ', 'G'],
 	['Δ', 'D'],
 	['Ε', 'E'],
@@ -1113,6 +1119,57 @@ const replacements = [
 	['Ϊ', 'I'],
 	['Ϋ', 'Y'],
 	['Ϲ', 'S'],
+	// Typographic variants of the letters
+	['ϐ', 'v'],
+	['ϑ', 'th'],
+	['ϕ', 'f'],
+	['ϖ', 'p'],
+	['ϰ', 'k'],
+	['ϱ', 'r'],
+	['ϲ', 's'],
+	['ϳ', 'j'],
+	['ϵ', 'e'],
+	['ϒ', 'Y'],
+	['ϓ', 'Y'],
+	['ϔ', 'Y'],
+	['ϴ', 'TH'],
+	['ϗ', 'k'],
+	['Ϗ', 'K'],
+	['϶', 'e'], // Reversed lunate epsilon symbol
+	['ᴦ', 'g'], // Small capital gamma
+	['ᴧ', 'l'], // Small capital lamda
+	['ᴨ', 'p'], // Small capital pi
+	['ᴩ', 'r'], // Small capital rho
+	['ᴪ', 'ps'], // Small capital psi
+	// Obsolete letters
+	['Ͱ', 'H'],
+	['ͱ', 'h'],
+	['Ͳ', 'SS'],
+	['ͳ', 'ss'],
+	['Ͷ', 'W'],
+	['ͷ', 'w'],
+	['Ϳ', 'J'],
+	['Ϸ', 'SH'],
+	['ϸ', 'sh'],
+	['Ϙ', 'Q'],
+	['ϙ', 'q'],
+	['Ϛ', 'ST'],
+	['ϛ', 'st'],
+	['Ϝ', 'W'],
+	['ϝ', 'w'],
+	['Ϟ', 'Q'],
+	['ϟ', 'q'],
+	['Ϡ', 'SS'],
+	['ϡ', 'ss'],
+	['Ϻ', 'S'],
+	['ϻ', 's'],
+	['ϼ', 'r'],
+	['Ͻ', 'S'],
+	['Ͼ', 'S'],
+	['Ͽ', 'S'],
+	['ͻ', 's'],
+	['ͼ', 's'],
+	['ͽ', 's'],
 
 	// Disabled as it conflicts with German and Latin.
 	// Hungarian
@@ -1976,7 +2033,7 @@ const replacements = [
 
 	// Greek
 	['𝚨', 'A'],
-	['𝚩', 'B'],
+	['𝚩', 'V'],
 	['𝚪', 'G'],
 	['𝚫', 'D'],
 	['𝚬', 'E'],
@@ -2034,7 +2091,7 @@ const replacements = [
 	['𝛠', 'r'],
 	['𝛡', 'p'],
 	['𝛢', 'A'],
-	['𝛣', 'B'],
+	['𝛣', 'V'],
 	['𝛤', 'G'],
 	['𝛥', 'D'],
 	['𝛦', 'E'],
@@ -2092,7 +2149,7 @@ const replacements = [
 	['𝜚', 'r'],
 	['𝜛', 'p'],
 	['𝜜', 'A'],
-	['𝜝', 'B'],
+	['𝜝', 'V'],
 	['𝜞', 'G'],
 	['𝜟', 'D'],
 	['𝜠', 'E'],
@@ -2150,7 +2207,7 @@ const replacements = [
 	['𝝔', 'r'],
 	['𝝕', 'p'],
 	['𝝖', 'A'],
-	['𝝗', 'B'],
+	['𝝗', 'V'],
 	['𝝘', 'G'],
 	['𝝙', 'D'],
 	['𝝚', 'E'],
@@ -2208,7 +2265,7 @@ const replacements = [
 	['𝞎', 'r'],
 	['𝞏', 'p'],
 	['𝞐', 'A'],
-	['𝞑', 'B'],
+	['𝞑', 'V'],
 	['𝞒', 'G'],
 	['𝞓', 'D'],
 	['𝞔', 'E'],
@@ -2265,8 +2322,8 @@ const replacements = [
 	['𝟇', 'f'],
 	['𝟈', 'r'],
 	['𝟉', 'p'],
-	['𝟊', 'F'],
-	['𝟋', 'f'],
+	['𝟊', 'W'],
+	['𝟋', 'w'],
 	['⒜', '(a)'],
 	['⒝', '(b)'],
 	['⒞', '(c)'],
