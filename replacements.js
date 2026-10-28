@@ -13,78 +13,52 @@ const romanNumeralReplacements = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VII
 	[String.fromCodePoint(0x21_70 + index), value.toLowerCase()],
 ]);
 
-// Letterlike symbols are math-style variants of plain ASCII letters. Most decompose to the plain letter, while the rest stand for a word. A symbol that is not in NFC, like the Kelvin sign, is excluded because the input is normalized to NFC before matching.
-const letterlikeReplacements = [
-	...Array.from({length: 0x21_50 - 0x21_00}, (_, index) => String.fromCodePoint(0x21_00 + index))
-		.map(character => [character, character.normalize('NFKC')])
-		.filter(([character, value]) => character.normalize() === character && /^[0-9A-Za-z]$/v.test(value)),
-	['\u{2C7C}', 'j'], // Subscript `j`
-	['\u{2C7D}', 'V'], // Modifier capital `V`
-	['℀', 'a/c'], // Account of
-	['℁', 'a/s'], // Addressed to the subject
-	['℅', 'c/o'], // Care of
-	['℆', 'c/u'], // Each
-	['℠', '(sm)'], // Service mark
-	['℡', 'TEL'],
-	['℻', 'FAX'],
+// Georgian letters have four case variants of the same alphabet: Asomtavruli (U+10A0), Nuskhuri (U+2D00), Mkhedruli (U+10D0), and Mtavruli (U+1C90). The code points sit at fixed offsets from each other, so the alphabet is listed once.
+const georgianAlphabet = [
+	'a',
+	'b',
+	'g',
+	'd',
+	'e',
+	'v',
+	'z',
+	't',
+	'i',
+	'k',
+	'l',
+	'm',
+	'n',
+	'o',
+	'p',
+	'zh',
+	'r',
+	's',
+	't',
+	'u',
+	'ph',
+	'k',
+	'gh',
+	'q',
+	'sh',
+	'ch',
+	'ts',
+	'dz',
+	'ts',
+	'tch',
+	'kh',
+	'j',
+	'h',
 ];
 
-// Encapsulated digits and capitals, in the styles that the explicit table entries do not cover. Each block is a fixed sequence.
-const uppercaseLetters = Array.from({length: 26}, (_, index) => String.fromCodePoint(0x41 + index));
-
-const enclosedAlphanumericReplacements = [
-	// Dingbat, circled sans-serif, and negative circled digits one to ten
-	...[0x27_76, 0x27_80, 0x27_8A].flatMap(start => Array.from({length: 10}, (_, index) => [String.fromCodePoint(start + index), String(index + 1)])),
-	// Circled numbers twenty-one to fifty
-	...Array.from({length: 15}, (_, index) => [String.fromCodePoint(0x32_51 + index), String(index + 21)]),
-	...Array.from({length: 15}, (_, index) => [String.fromCodePoint(0x32_B1 + index), String(index + 36)]),
-	// Parenthesized capitals
-	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_10 + index), `(${letter})`]),
-	// Squared and negative circled capitals
-	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_30 + index), letter]),
-	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_50 + index), letter]),
-	// Digits followed by a decimal separator
-	[String.fromCodePoint(0x1_F1_00), '0.'],
-	...Array.from({length: 10}, (_, index) => [String.fromCodePoint(0x1_F1_01 + index), `${index},`]),
-	[String.fromCodePoint(0x1_F1_0B), '0'],
-	[String.fromCodePoint(0x1_F1_0C), '0'],
-	// Encapsulated symbols that stand for several letters
-	['🄫', 'C'],
-	['🄬', 'R'],
-	['🄭', 'CD'],
-	['🄮', 'WZ'],
-	['🅊', 'HV'],
-	['🅋', 'MV'],
-	['🅌', 'SD'],
-	['🅍', 'SS'],
-	['🅎', 'PPV'],
-	['🅏', 'WC'],
-	['🅪', 'MC'],
-	['🅫', 'MD'],
-	['🅬', 'MR'],
-	['🆐', 'DJ'],
-	['㉐', 'PTE'], // Partnership sign
-	['﬩', '+'], // Hebrew alternative plus sign
-];
-
-// These blocks hold the squared units of CJK text, the vertical and small forms of punctuation, and the segmented letters. Every character whose compatibility decomposition is plain ASCII text takes that text.
-const compatibilityFormRanges = [
-	[0x32_CC, 0x32_CF],
-	[0x33_00, 0x33_FF],
-	[0xFE_10, 0xFE_1F],
-	[0xFE_30, 0xFE_68],
-	[0xFE_6A, 0xFE_6F],
-	[0x1_FB_F0, 0x1_FB_F9],
-];
-
-const compatibilityFormReplacements = [
-	...compatibilityFormRanges
-		.flatMap(([start, end]) => codePointRange(start, end))
-		.map(character => [character, character.normalize('NFKC')])
-		.filter(([, value]) => /^\p{ASCII}+$/v.test(value)),
-	// Outlined letters and digits form one fixed sequence. Generate them explicitly because Node.js 22 does not know their Unicode 16 compatibility decompositions.
-	...[...uppercaseLetters, ...codePointRange(0x30, 0x39)].map((character, index) => [String.fromCodePoint(0x1_CC_D6 + index), character]),
-];
+const georgianReplacements = georgianAlphabet.flatMap((value, index) => {
+	const capitalized = value[0].toUpperCase() + value.slice(1);
+	return [
+		[String.fromCodePoint(0x10_D0 + index), value],
+		[String.fromCodePoint(0x2D_00 + index), value],
+		[String.fromCodePoint(0x1C_90 + index), capitalized],
+		[String.fromCodePoint(0x10_A0 + index), capitalized],
+	];
+});
 
 // Modifier letters are superscript and subscript copies of a base letter. Unicode classifies them as diacritics, so they must map to the base letter before diacritics are removed.
 const modifierLetterRanges = [
@@ -149,57 +123,83 @@ const modifierLetterBases = new Map([
 ]);
 
 const modifierLetterReplacements = modifierLetterRanges
-	.flatMap(([start, end]) => Array.from({length: end - start + 1}, (_, index) => String.fromCodePoint(start + index)))
+	.flatMap(([start, end]) => codePointRange(start, end))
 	.map(character => [character, modifierLetterBases.get(character) ?? character.normalize('NFKC')])
 	// The rest are phonetic letters whose base letter is not ASCII either, so they stay unmapped
 	.filter(([, value]) => /^\p{ASCII}*$/v.test(value));
 
-// Georgian letters have four case variants of the same alphabet: Asomtavruli (U+10A0), Nuskhuri (U+2D00), Mkhedruli (U+10D0), and Mtavruli (U+1C90). The code points sit at fixed offsets from each other, so the alphabet is listed once.
-const georgianAlphabet = [
-	'a',
-	'b',
-	'g',
-	'd',
-	'e',
-	'v',
-	'z',
-	't',
-	'i',
-	'k',
-	'l',
-	'm',
-	'n',
-	'o',
-	'p',
-	'zh',
-	'r',
-	's',
-	't',
-	'u',
-	'ph',
-	'k',
-	'gh',
-	'q',
-	'sh',
-	'ch',
-	'ts',
-	'dz',
-	'ts',
-	'tch',
-	'kh',
-	'j',
-	'h',
+// Letterlike symbols are math-style variants of plain ASCII letters. Most decompose to the plain letter, while the rest stand for a word. A symbol that is not in NFC, like the Kelvin sign, is excluded because the input is normalized to NFC before matching.
+const letterlikeReplacements = [
+	...codePointRange(0x21_00, 0x21_4F)
+		.map(character => [character, character.normalize('NFKC')])
+		.filter(([character, value]) => character.normalize() === character && /^[0-9A-Za-z]$/v.test(value)),
+	['\u{2C7C}', 'j'], // Subscript `j`
+	['\u{2C7D}', 'V'], // Modifier capital `V`
+	['℀', 'a/c'], // Account of
+	['℁', 'a/s'], // Addressed to the subject
+	['℅', 'c/o'], // Care of
+	['℆', 'c/u'], // Each
+	['℠', '(sm)'], // Service mark
+	['℡', 'TEL'],
+	['℻', 'FAX'],
 ];
 
-const georgianReplacements = georgianAlphabet.flatMap((value, index) => {
-	const capitalized = value[0].toUpperCase() + value.slice(1);
-	return [
-		[String.fromCodePoint(0x10_D0 + index), value],
-		[String.fromCodePoint(0x2D_00 + index), value],
-		[String.fromCodePoint(0x1C_90 + index), capitalized],
-		[String.fromCodePoint(0x10_A0 + index), capitalized],
-	];
-});
+// Encapsulated digits and capitals, in the styles that the explicit table entries do not cover. Each block is a fixed sequence.
+const uppercaseLetters = codePointRange(0x41, 0x5A);
+
+const enclosedAlphanumericReplacements = [
+	// Dingbat, circled sans-serif, and negative circled digits one to ten
+	...[0x27_76, 0x27_80, 0x27_8A].flatMap(start => codePointRange(start, start + 9).map((character, index) => [character, String(index + 1)])),
+	// Circled numbers twenty-one to fifty
+	...codePointRange(0x32_51, 0x32_5F).map((character, index) => [character, String(index + 21)]),
+	...codePointRange(0x32_B1, 0x32_BF).map((character, index) => [character, String(index + 36)]),
+	// Parenthesized capitals
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_10 + index), `(${letter})`]),
+	// Squared and negative circled capitals
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_30 + index), letter]),
+	...uppercaseLetters.map((letter, index) => [String.fromCodePoint(0x1_F1_50 + index), letter]),
+	// Digits followed by a decimal separator
+	[String.fromCodePoint(0x1_F1_00), '0.'],
+	...codePointRange(0x1_F1_01, 0x1_F1_0A).map((character, index) => [character, `${index},`]),
+	[String.fromCodePoint(0x1_F1_0B), '0'],
+	[String.fromCodePoint(0x1_F1_0C), '0'],
+	// Encapsulated symbols that stand for several letters
+	['🄫', 'C'],
+	['🄬', 'R'],
+	['🄭', 'CD'],
+	['🄮', 'WZ'],
+	['🅊', 'HV'],
+	['🅋', 'MV'],
+	['🅌', 'SD'],
+	['🅍', 'SS'],
+	['🅎', 'PPV'],
+	['🅏', 'WC'],
+	['🅪', 'MC'],
+	['🅫', 'MD'],
+	['🅬', 'MR'],
+	['🆐', 'DJ'],
+	['㉐', 'PTE'], // Partnership sign
+	['﬩', '+'], // Hebrew alternative plus sign
+];
+
+// These blocks hold the squared units of CJK text, the vertical and small forms of punctuation, and the segmented letters. Every character whose compatibility decomposition is plain ASCII text takes that text.
+const compatibilityFormRanges = [
+	[0x32_CC, 0x32_CF],
+	[0x33_00, 0x33_FF],
+	[0xFE_10, 0xFE_1F],
+	[0xFE_30, 0xFE_68],
+	[0xFE_6A, 0xFE_6F],
+	[0x1_FB_F0, 0x1_FB_F9],
+];
+
+const compatibilityFormReplacements = [
+	...compatibilityFormRanges
+		.flatMap(([start, end]) => codePointRange(start, end))
+		.map(character => [character, character.normalize('NFKC')])
+		.filter(([, value]) => /^\p{ASCII}+$/v.test(value)),
+	// Outlined letters and digits form one fixed sequence. Generate them explicitly because Node.js 22 does not know their Unicode 16 compatibility decompositions.
+	...[...uppercaseLetters, ...codePointRange(0x30, 0x39)].map((character, index) => [String.fromCodePoint(0x1_CC_D6 + index), character]),
+];
 
 const replacements = [
 	// German umlauts
@@ -217,7 +217,6 @@ const replacements = [
 	['Á', 'A'],
 	['Â', 'A'],
 	['Ã', 'A'],
-	['Ä', 'Ae'],
 	['Å', 'A'],
 	['Æ', 'AE'],
 	['Ç', 'C'],
@@ -236,7 +235,6 @@ const replacements = [
 	['Ó', 'O'],
 	['Ô', 'O'],
 	['Õ', 'O'],
-	['Ö', 'Oe'],
 	['Ō', 'O'],
 	['Ő', 'O'],
 	['Ø', 'O'],
@@ -244,16 +242,13 @@ const replacements = [
 	['Ù', 'U'],
 	['Ú', 'U'],
 	['Û', 'U'],
-	['Ü', 'Ue'],
 	['Ű', 'U'],
 	['Ý', 'Y'],
 	['Þ', 'TH'],
-	['ß', 'ss'],
 	['à', 'a'],
 	['á', 'a'],
 	['â', 'a'],
 	['ã', 'a'],
-	['ä', 'ae'],
 	['å', 'a'],
 	['æ', 'ae'],
 	['ç', 'c'],
@@ -272,7 +267,6 @@ const replacements = [
 	['ó', 'o'],
 	['ô', 'o'],
 	['õ', 'o'],
-	['ö', 'oe'],
 	['ō', 'o'],
 	['ő', 'o'],
 	['ø', 'o'],
@@ -280,7 +274,6 @@ const replacements = [
 	['ù', 'u'],
 	['ú', 'u'],
 	['û', 'u'],
-	['ü', 'ue'],
 	['ű', 'u'],
 	['ý', 'y'],
 	['þ', 'th'],
@@ -539,38 +532,6 @@ const replacements = [
 	['ǳ', 'dz'],
 
 	// Vietnamese
-	['à', 'a'],
-	['À', 'A'],
-	['á', 'a'],
-	['Á', 'A'],
-	['â', 'a'],
-	['Â', 'A'],
-	['ã', 'a'],
-	['Ã', 'A'],
-	['è', 'e'],
-	['È', 'E'],
-	['é', 'e'],
-	['É', 'E'],
-	['ê', 'e'],
-	['Ê', 'E'],
-	['ì', 'i'],
-	['Ì', 'I'],
-	['í', 'i'],
-	['Í', 'I'],
-	['ò', 'o'],
-	['Ò', 'O'],
-	['ó', 'o'],
-	['Ó', 'O'],
-	['ô', 'o'],
-	['Ô', 'O'],
-	['õ', 'o'],
-	['Õ', 'O'],
-	['ù', 'u'],
-	['Ù', 'U'],
-	['ú', 'u'],
-	['Ú', 'U'],
-	['ý', 'y'],
-	['Ý', 'Y'],
 	['ă', 'a'],
 	['Ă', 'A'],
 	['Đ', 'D'],
@@ -1116,6 +1077,30 @@ const replacements = [
 	['ю', 'yu'],
 	['Я', 'Ya'],
 	['я', 'ya'],
+
+	// Church Slavonic letters
+	['Ѣ', 'E'], // Yat
+	['ѣ', 'e'],
+	['Ѳ', 'F'], // Fita
+	['ѳ', 'f'],
+	['Ѵ', 'I'], // Izhitsa
+	['ѵ', 'i'],
+	['Ѡ', 'O'], // Omega
+	['ѡ', 'o'],
+	['Ѻ', 'O'], // Round omega
+	['ѻ', 'o'],
+	['Ѯ', 'Ks'], // Ksi
+	['ѯ', 'ks'],
+	['Ѱ', 'Ps'], // Psi
+	['ѱ', 'ps'],
+	['Ѹ', 'U'], // Uk
+	['ѹ', 'u'],
+	['Ѥ', 'Ye'], // Iotified E
+	['ѥ', 'ye'],
+	['Ҁ', 'Q'], // Koppa
+	['ҁ', 'q'],
+	['Ѿ', 'Ot'], // Ot
+	['ѿ', 'ot'],
 	['Ѧ', 'E'], // Little yus
 	['ѧ', 'e'],
 	['Ѩ', 'Ye'], // Iotified little yus
@@ -1425,33 +1410,7 @@ const replacements = [
 	['Ꚛ', 'O'], // CYRILLIC CAPITAL LETTER CROSSED O
 	['ꚛ', 'o'], // CYRILLIC SMALL LETTER CROSSED O
 
-	// Church Slavonic letters
-	['Ѣ', 'E'], // Yat
-	['ѣ', 'e'],
-	['Ѳ', 'F'], // Fita
-	['ѳ', 'f'],
-	['Ѵ', 'I'], // Izhitsa
-	['ѵ', 'i'],
-	['Ѡ', 'O'], // Omega
-	['ѡ', 'o'],
-	['Ѻ', 'O'], // Round omega
-	['ѻ', 'o'],
-	['Ѯ', 'Ks'], // Ksi
-	['ѯ', 'ks'],
-	['Ѱ', 'Ps'], // Psi
-	['ѱ', 'ps'],
-	['Ѹ', 'U'], // Uk
-	['ѹ', 'u'],
-	['Ѥ', 'Ye'], // Iotified E
-	['ѥ', 'ye'],
-	['Ҁ', 'Q'], // Koppa
-	['ҁ', 'q'],
-	['Ѿ', 'Ot'], // Ot
-	['ѿ', 'ot'],
-
 	// Romanian
-	['ă', 'a'],
-	['Ă', 'A'],
 	['ș', 's'],
 	['Ș', 'S'],
 	['ț', 't'],
@@ -1462,8 +1421,6 @@ const replacements = [
 	// Turkish
 	['ş', 's'],
 	['Ş', 'S'],
-	['ç', 'c'],
-	['Ç', 'C'],
 	['ğ', 'g'],
 	['Ğ', 'G'],
 	['ı', 'i'],
@@ -1737,7 +1694,6 @@ const replacements = [
 	['Ώ', 'O'],
 	['Ϊ', 'I'],
 	['Ϋ', 'Y'],
-	['Ϲ', 'S'],
 	// Typographic variants of the letters
 	['ϐ', 'v'],
 	['ϑ', 'th'],
@@ -1783,6 +1739,7 @@ const replacements = [
 	['Ϻ', 'S'],
 	['ϻ', 's'],
 	['ϼ', 'r'],
+	['Ϲ', 'S'],
 	['Ͻ', 'S'],
 	['Ͼ', 'S'],
 	['Ͽ', 'S'],
@@ -1818,31 +1775,18 @@ const replacements = [
 	['Ļ', 'L'],
 	['Ņ', 'N'],
 	['Ū', 'U'],
-	['č', 'c'],
-	['š', 's'],
-	['ž', 'z'],
-	['Č', 'C'],
-	['Š', 'S'],
-	['Ž', 'Z'],
 
 	// Lithuanian
 	['ą', 'a'],
-	['č', 'c'],
 	['ę', 'e'],
 	['ė', 'e'],
 	['į', 'i'],
-	['š', 's'],
 	['ų', 'u'],
-	['ū', 'u'],
-	['ž', 'z'],
 	['Ą', 'A'],
-	['Č', 'C'],
 	['Ę', 'E'],
 	['Ė', 'E'],
 	['Į', 'I'],
-	['Š', 'S'],
 	['Ų', 'U'],
-	['Ū', 'U'],
 
 	// Macedonian
 	['Ѓ', 'Gj'],
@@ -1869,17 +1813,13 @@ const replacements = [
 	['ћ', 'c'],
 
 	// Polish
-	['ą', 'a'],
 	['ć', 'c'],
-	['ę', 'e'],
 	['ł', 'l'],
 	['ń', 'n'],
 	['ś', 's'],
 	['ź', 'z'],
 	['ż', 'z'],
-	['Ą', 'A'],
 	['Ć', 'C'],
-	['Ę', 'E'],
 	['Ł', 'L'],
 	['Ń', 'N'],
 	['Ś', 'S'],
@@ -3029,8 +2969,6 @@ const replacements = [
 	['ġ', 'g'],
 	['Ħ', 'H'],
 	['ħ', 'h'],
-	['Ż', 'Z'],
-	['ż', 'z'],
 
 	// Numbers
 	['½', '1/2'],

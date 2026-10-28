@@ -126,6 +126,10 @@ for (const locale of Object.keys(localeReplacements)) {
 
 export default localeReplacements;
 
+// A combining mark belongs to the letter before it, so marks are skipped when checking the end of a word.
+const wholeWordPattern = word => new RegExp(String.raw`(?<![\p{Letter}\p{Mark}])${word}(?!\p{Mark}*\p{Letter})`, 'gv');
+const wordEndPattern = word => new RegExp(String.raw`${word}(?!\p{Mark}*\p{Letter})`, 'gv');
+
 /**
 Language-specific replacements that depend on the surrounding text.
 
@@ -133,16 +137,15 @@ Values are arrays of [pattern, replacement] pairs. They are applied after the cu
 */
 export const localeContextReplacements = {
 	// Bulgarian
-	// A combining mark belongs to the letter before it, so marks are skipped when checking the end of a word.
 	bg: [
 		// The country name is a fixed exception (България → Bulgaria, not Balgaria)
-		[/(?<![\p{Letter}\p{Mark}])България(?!\p{Mark}*\p{Letter})/gv, 'Bulgaria'],
-		[/(?<![\p{Letter}\p{Mark}])БЪЛГАРИЯ(?!\p{Mark}*\p{Letter})/gv, 'BULGARIA'],
-		[/(?<![\p{Letter}\p{Mark}])българия(?!\p{Mark}*\p{Letter})/gv, 'bulgaria'],
+		[wholeWordPattern('България'), 'Bulgaria'],
+		[wholeWordPattern('БЪЛГАРИЯ'), 'BULGARIA'],
+		[wholeWordPattern('българия'), 'bulgaria'],
 
 		// Word-final ия is ia (София → Sofia)
-		[/ия(?!\p{Mark}*\p{Letter})/gv, 'ia'],
-		[/Ия(?!\p{Mark}*\p{Letter})/gv, 'Ia'],
-		[/ИЯ(?!\p{Mark}*\p{Letter})/gv, 'IA'],
+		[wordEndPattern('ия'), 'ia'],
+		[wordEndPattern('Ия'), 'Ia'],
+		[wordEndPattern('ИЯ'), 'IA'],
 	],
 };
