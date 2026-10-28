@@ -47,7 +47,7 @@ Type: `object`
 
 ##### customReplacements
 
-Type: `Array<string[]> | Map<string, string>`\
+Type: `Array<[string, string]> | Map<string, string>`\
 Default: `[]`
 
 Add your own custom replacements.
@@ -121,7 +121,9 @@ This includes special handling for:
 
 - Arabic
 - Armenian
+- Belarusian
 - Bulgarian
+- Croatian
 - Czech
 - Danish
 - Dhivehi
@@ -129,6 +131,8 @@ This includes special handling for:
 - German (umlauts)
 - Greek
 - Hungarian
+- Kazakh
+- Kurdish
 - Latin
 - Latvian
 - Lithuanian
@@ -139,8 +143,11 @@ This includes special handling for:
 - Romanian
 - Russian
 - Serbian
+- Sindhi
 - Slovak
+- Slovenian
 - Swedish
+- Tatar
 - Turkish
 - Ukrainian
 - Urdu
