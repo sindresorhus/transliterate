@@ -915,7 +915,26 @@ const replacements = [
 	['Օ', 'O'],
 	['ֆ', 'f'],
 	['Ֆ', 'F'],
+	// Yiwn is `v`, which is why the `և` ligature below is `yev`
+	['ւ', 'v'],
+	['Ւ', 'V'],
 	['և', 'yev'],
+	// Armenian presentation ligatures
+	['ﬓ', 'mn'],
+	['ﬔ', 'mye'],
+	['ﬕ', 'mi'],
+	['ﬖ', 'vn'],
+	['ﬗ', 'mkh'],
+	// Punctuation
+	['։', '.'],
+	['՝', ','],
+	['՞', '?'],
+	['՛', '!'],
+	['՜', '!'],
+	['՚', '\''], // Apostrophe
+	['՟', '.'], // Abbreviation mark
+	['ՠ', 'a'], // Turned ayb, a phonetic variant of ayb
+	['ֈ', 'y'], // Yi with stroke, used in Lomavren
 
 	// Georgian
 	['ა', 'a'],

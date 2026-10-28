@@ -312,6 +312,28 @@ test('Church Slavonic Cyrillic letters are transliterated', () => {
 	assert.equal(transliterate('мѣра'), 'mera');
 });
 
+test('Armenian punctuation is transliterated', () => {
+	assert.equal(transliterate('։ ՝ ՞ ՛ ՜'), '. , ? ! !');
+	assert.equal(transliterate('աշխարհ։'), 'ashkharh.');
+
+	// Apostrophe and abbreviation mark
+	assert.equal(transliterate('՚'), '\'');
+	assert.equal(transliterate('՟'), '.');
+
+	// Phonetic letters outside the main alphabet
+	assert.equal(transliterate('ՠ ֈ'), 'a y');
+	assert.equal(transliterate('Ս.Ս.Ս.Ռ՟'), 'S.S.S.R.');
+});
+
+test('Armenian yiwn and presentation ligatures are transliterated', () => {
+	// `ւ` is a letter of the alphabet, not only part of the `ու` digraph
+	assert.equal(transliterate('ւ Ւ'), 'v V');
+	assert.equal(transliterate('հաւատ'), 'havat');
+
+	// Precomposed ligatures decompose into letters that are already mapped
+	assert.equal(transliterate('ﬓ ﬔ ﬕ ﬖ ﬗ'), 'mn mye mi vn mkh');
+});
+
 test('Latin ligatures and digraphs are expanded', () => {
 	assert.equal(transliterate('ﬀﬁﬂﬃﬄﬅﬆ'), 'fffiflffifflstst');
 	assert.equal(transliterate('ſ'), 's');
