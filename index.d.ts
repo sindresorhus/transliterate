@@ -60,6 +60,8 @@ export type Options = {
 /**
 Convert Unicode characters to Latin characters using [transliteration](https://en.wikipedia.org/wiki/Transliteration).
 
+Throws a `RangeError` if any string being normalized contains more than 100 consecutive Unicode combining marks. This includes the input, custom replacement keys, and intermediate results. The total string length is not limited.
+
 @param string - String to transliterate.
 
 @example

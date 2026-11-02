@@ -1287,3 +1287,29 @@ test('custom replacements preserve sequential replacement and JavaScript substit
 	assert.equal(transliterate('x', {customReplacements: [['x', '$$$&$1']]}), '$x$1');
 	assert.equal(transliterate('xx', {customReplacements: [['x', '[$&]']]}), '[x][x]');
 });
+
+test('rejects excessive combining marks before normalization', ({mock}) => {
+	const input = `a${'\u{301}\u{323}'.repeat(40_000)}`;
+	const normalizeMock = mock.method(String.prototype, 'normalize');
+	assert.throws(() => transliterate(input), RangeError);
+	assert.equal(normalizeMock.mock.callCount(), 0);
+});
+
+test('limits consecutive combining marks without limiting total input length', () => {
+	assert.equal(transliterate(`a${'\u{301}'.repeat(100)}`), 'a');
+	assert.throws(() => transliterate(`a${'\u{301}'.repeat(101)}`), RangeError);
+	assert.equal(transliterate(`a${'\u{301}'.repeat(100)}`.repeat(1000)), 'a'.repeat(1000));
+	assert.equal(transliterate('\u{1D185}'.repeat(100)), '');
+	assert.throws(() => transliterate('\u{1D185}'.repeat(101)), RangeError);
+});
+
+test('rejects excessive combining marks in custom replacements', () => {
+	const marks = '\u{301}\u{323}'.repeat(100);
+	assert.throws(() => transliterate('x', {customReplacements: [[marks, 'x']]}), RangeError);
+	assert.throws(() => transliterate('x', {customReplacements: [['x', marks]]}), RangeError);
+	assert.throws(() => transliterate('xx', {customReplacements: [['x', '\u{301}'.repeat(100)]]}), RangeError);
+});
+
+test('rejects excessive combining marks formed by built-in replacements', () => {
+	assert.throws(() => transliterate('\u{301}ъ'.repeat(101)), RangeError);
+});
