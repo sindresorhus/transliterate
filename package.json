@@ -1,6 +1,6 @@
 {
 	"name": "@sindresorhus/transliterate",
-	"version": "2.3.1",
+	"version": "3.0.0",
 	"description": "Convert Unicode characters to Latin characters using transliteration",
 	"license": "MIT",
 	"repository": "sindresorhus/transliterate",
