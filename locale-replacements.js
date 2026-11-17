@@ -8,6 +8,16 @@ Values are arrays of [from, to] replacement pairs.
 These replacements take precedence over the default replacements when a matching locale is specified.
 */
 
+// Shared Swedish/Finnish replacements
+const swedishFinnishReplacements = [
+	['ä', 'a'],
+	['Ä', 'A'],
+	['ö', 'o'],
+	['Ö', 'O'],
+	['å', 'a'],
+	['Å', 'A'],
+];
+
 // Shared Danish/Norwegian replacements
 const danishNorwegianReplacements = [
 	['æ', 'ae'],
@@ -20,14 +30,10 @@ const danishNorwegianReplacements = [
 
 const localeReplacements = {
 	// Swedish
-	sv: [
-		['ä', 'a'],
-		['Ä', 'A'],
-		['ö', 'o'],
-		['Ö', 'O'],
-		['å', 'a'],
-		['Å', 'A'],
-	],
+	sv: swedishFinnishReplacements,
+
+	// Finnish
+	fi: swedishFinnishReplacements,
 
 	// Danish
 	da: danishNorwegianReplacements,

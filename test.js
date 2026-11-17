@@ -190,6 +190,10 @@ test('locale option for language-specific transliteration', () => {
 	assert.equal(transliterate('Räksmörgås', {locale: 'sv'}), 'Raksmorgas');
 	assert.equal(transliterate('Räksmörgås', {locale: 'sv-SE'}), 'Raksmorgas'); // Full locale tag
 
+	// Finnish
+	assert.equal(transliterate('tärkeille', {locale: 'fi'}), 'tarkeille');
+	assert.equal(transliterate('Hyvää päivää, Åbo ÄÖ', {locale: 'fi-FI'}), 'Hyvaa paivaa, Abo AO');
+
 	// German (default behavior)
 	assert.equal(transliterate('Räksmörgås', {locale: 'de'}), 'Raeksmoergas');
 	assert.equal(transliterate('Räksmörgås'), 'Raeksmoergas'); // Without locale, uses default

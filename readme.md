@@ -107,6 +107,7 @@ The following locales have specific replacement rules when using the `locale` op
 - `bg` - Bulgarian
 - `da` - Danish
 - `de` - German
+- `fi` - Finnish
 - `hu` - Hungarian
 - `nb` - Norwegian Bokmål
 - `sr` - Serbian
@@ -129,6 +130,7 @@ This includes special handling for:
 - Czech
 - Danish
 - Dhivehi
+- Finnish
 - Georgian
 - German (umlauts)
 - Greek
